@@ -1,4 +1,30 @@
 <!doctype html>
+<!--
+  ============================================================
+  朋友聊天室  index.html
+  目前版本：V1.2　　本版建立日期：2026-10-09
+  搭配資料庫指令：update_v3.sql（請先執行過才能使用）
+
+  【修改紀錄】
+  V1.0（2026-10-09）初版：輸入名稱即可聊天、傳圖片/檔案/影音、匯出對話、即時訊息
+  V1.1（2026-10-09）新增：房間表與期限、倒數、改名通知、回覆、輸入中提示、上線人數、
+                       背景通知（標題閃動/桌面通知）、深色模式、表情符號、複製邀請網址
+  V1.2（2026-10-09）本次修改：
+    1. 期限改為手動輸入「天＋小時」（預設 0 天 1 小時），另有「不限時」
+    2. 房名、期限、注意事項、公告、通關密碼：只有房主（持有房主專用網址）能修改
+    3. 進入需輸入 4 碼通關密碼（格框輸入＋提示文字）；連錯 10 次鎖定 10 分鐘
+    4. 進入時可上傳自己的頭像照片，或選預設圖示（之後可在 👤 修改）
+    5. 進入房間、改名時，聊天室會顯示當下時間與狀態
+    6. 倒數：1 小時以上顯示「天:小時」，不到 1 小時改為「分:秒」逐秒倒數
+    7. 上方新增 📢「注意事項／公告」（兩個分頁，只有房主可編輯）
+    8. 上傳檔案移到上方 📎，點開分為 照片／影片／檔案
+    9. 原 ＋ 位置改為「常用回覆」（含邀約常用短句，點一下直接送出）
+   10. 指定回覆強化：每則訊息有 ↩、雙擊訊息也可回覆，引用區塊可點擊跳到原訊息
+   11. 新增 @標註：可選已加入過的成員或 @全部人，被標註的人訊息會醒目提示
+   12. 房主可「清空聊天記錄」（連同上傳的檔案）、複製房主專用網址
+   13. 資料存取改為「必須是成員」（匿名登入＋通關密碼驗證），安全性比 V2 更高
+  ============================================================
+-->
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
@@ -8,10 +34,10 @@
 <style>
   :root { --bg:#f2f4f7; --panel:#fff; --list:#f7f8fa; --text:#222; --muted:#7a8394; --line:#e2e6ed;
           --bubble:#fff; --me:#dce8ff; --meline:#c4d7fb; --accent:#2f6fed; --ghost:#e4e8ef; --ghosttext:#333;
-          --input:#fff; --inputline:#c8cfda; --quote:#eef1f6; }
+          --input:#fff; --inputline:#c8cfda; --quote:#eef1f6; --warn:#c0392b; --at:#fff3cd; --atline:#f0c36d; }
   [data-theme="dark"] { --bg:#12151a; --panel:#1b1f27; --list:#161a21; --text:#e6e9ef; --muted:#8d97a8; --line:#2a303b;
           --bubble:#242a35; --me:#243a63; --meline:#2f4c82; --accent:#4c86ff; --ghost:#2a303b; --ghosttext:#dfe3ea;
-          --input:#12151a; --inputline:#3a4252; --quote:#1d222b; }
+          --input:#12151a; --inputline:#3a4252; --quote:#1d222b; --warn:#ff7b6b; --at:#4a3d14; --atline:#8a6d1f; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body { font-family: -apple-system, "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); }
@@ -19,104 +45,245 @@
   .center { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
   button { font: inherit; cursor: pointer; border: 0; border-radius: 8px; padding: 10px 16px; background: var(--accent); color: #fff; }
   button.ghost { background: var(--ghost); color: var(--ghosttext); }
-  input[type=text], select { font: inherit; padding: 10px 12px; border: 1px solid var(--inputline); border-radius: 8px; width: 100%; max-width: 320px; background: var(--input); color: var(--text); }
-  form.col { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  button.danger { background: var(--warn); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  input[type=text], input[type=number], select, textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--inputline); border-radius: 8px; width: 100%; max-width: 340px; background: var(--input); color: var(--text); }
+  textarea { max-width: none; min-height: 120px; resize: vertical; }
+  input[type=number] { width: 90px; text-align: center; }
+  form.col, .col0 { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .field { width: 100%; max-width: 340px; text-align: left; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .err { font-size: 13px; color: var(--warn); min-height: 18px; }
+  .pinrow { display: flex; gap: 10px; justify-content: center; }
+  .pinbox { width: 52px !important; height: 60px; padding: 0 !important; text-align: center; font-size: 26px !important; border: 2px solid var(--inputline); border-radius: 12px; background: var(--input); color: var(--text); }
+  .pinbox:focus { outline: none; border-color: var(--accent); }
+  .box { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .box input { max-width: none; font-size: 13px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--ghost); display: flex; align-items: center; justify-content: center; font-size: 20px; flex: none; overflow: hidden; }
+  .avatar.big { width: 72px; height: 72px; font-size: 38px; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-width: 300px; }
+  .avgrid button { background: var(--ghost); padding: 4px; font-size: 22px; }
+  .avgrid button.on { outline: 2px solid var(--accent); }
   #chat { height: 100%; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; background: var(--panel); position: relative; }
   header { padding: 8px 12px; border-bottom: 1px solid var(--line); }
   .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .title { font-weight: 600; font-size: 17px; }
-  .tools { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tools button { padding: 6px 9px; font-size: 14px; }
+  .tools { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tools button { padding: 5px 8px; font-size: 15px; position: relative; }
+  .dot { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; }
   .sub { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  #countdown { font-variant-numeric: tabular-nums; }
   #list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--list); }
-  .msg { max-width: 82%; align-self: flex-start; }
-  .msg.me { align-self: flex-end; }
+  .msg { display: flex; gap: 8px; max-width: 88%; align-self: flex-start; }
+  .msg.me { flex-direction: row-reverse; align-self: flex-end; }
+  .msg .col { min-width: 0; }
   .meta { font-size: 12px; color: var(--muted); margin: 0 4px 2px; display: flex; gap: 8px; align-items: center; }
   .me .meta { justify-content: flex-end; }
-  .rbtn { background: none; color: var(--muted); padding: 0 4px; font-size: 14px; border-radius: 4px; }
+  .rbtn { background: none; color: var(--muted); padding: 0 6px; font-size: 15px; border-radius: 4px; }
+  .rbtn:hover { background: var(--ghost); }
   .bubble { background: var(--bubble); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; white-space: pre-wrap; word-break: break-word; }
   .me .bubble { background: var(--me); border-color: var(--meline); }
+  .bubble.mentioned { background: var(--at); border-color: var(--atline); }
   .bubble img, .bubble video { max-width: 100%; max-height: 320px; border-radius: 8px; display: block; }
   .bubble a { color: var(--accent); }
+  .at { color: var(--accent); font-weight: 600; }
   .quote { font-size: 12px; color: var(--muted); background: var(--quote); border-left: 3px solid var(--accent); border-radius: 6px; padding: 4px 8px; margin-bottom: 6px; cursor: pointer; white-space: normal; }
-  .sys { align-self: center; font-size: 12px; color: var(--muted); background: var(--quote); border-radius: 999px; padding: 3px 12px; }
+  .sys { align-self: center; font-size: 12px; color: var(--muted); background: var(--quote); border-radius: 999px; padding: 3px 12px; text-align: center; }
   .flash .bubble { outline: 2px solid var(--accent); }
   #typing { font-size: 12px; color: var(--muted); padding: 2px 14px; min-height: 20px; }
-  #status { font-size: 12px; color: #c0392b; padding: 0 14px 4px; min-height: 16px; }
+  #status { font-size: 12px; color: var(--warn); padding: 0 14px 4px; min-height: 16px; }
   #replyBar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px; background: var(--quote); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
   #replyBar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #replyBar button { padding: 2px 8px; }
-  form#sendForm { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--line); align-items: center; }
-  form#sendForm input[type=text] { max-width: none; flex: 1; }
-  #emojiBox { position: absolute; left: 10px; bottom: 62px; width: 280px; max-width: calc(100% - 20px); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 5; }
+  form#sendForm { display: flex; gap: 5px; padding: 10px; border-top: 1px solid var(--line); align-items: center; }
+  form#sendForm input[type=text] { max-width: none; flex: 1; min-width: 0; }
+  form#sendForm button { padding: 9px 10px; }
+  .popup { position: absolute; left: 10px; bottom: 62px; max-width: calc(100% - 20px); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 5; }
+  #emojiBox { width: 280px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
   #emojiBox button { background: none; padding: 4px; font-size: 20px; border-radius: 6px; }
   #emojiBox button:hover { background: var(--ghost); }
+  #quickBox { width: 340px; display: flex; flex-wrap: wrap; gap: 6px; }
+  #quickBox button { background: var(--ghost); color: var(--ghosttext); padding: 6px 10px; border-radius: 999px; font-size: 14px; }
+  #atBox { width: 240px; max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+  #atBox button { background: none; color: var(--text); text-align: left; padding: 6px 8px; }
+  #atBox button:hover { background: var(--ghost); }
+  #attachMenu { position: absolute; top: 56px; right: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 6; }
+  #attachMenu button { background: none; color: var(--text); text-align: left; padding: 8px 14px; }
+  #attachMenu button:hover { background: var(--ghost); }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 12px; }
+  .sheet { background: var(--panel); border-radius: 14px; padding: 16px; width: 100%; max-width: 460px; max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+  .sheet h3 { margin: 0; display: flex; justify-content: space-between; align-items: center; }
+  .sheet .field { max-width: none; }
+  .sheet input[type=text] { max-width: none; }
+  .tabs { display: flex; gap: 6px; }
+  .tabs button { flex: 1; }
+  .tabs button.off { background: var(--ghost); color: var(--ghosttext); }
+  .view { white-space: pre-wrap; word-break: break-word; background: var(--quote); border-radius: 8px; padding: 10px; min-height: 80px; font-size: 14px; }
+  .ver { font-size: 11px; color: var(--muted); text-align: center; }
 </style>
 </head>
 <body>
 
-<!-- 畫面 1：建立新房間 -->
+<!-- 畫面：建立聊天室 -->
 <div id="home" class="center hidden">
   <h2>建立聊天室</h2>
   <form id="createForm" class="col">
-    <input type="text" id="roomTitle" maxlength="30" placeholder="聊天室名稱（例如：週末聚餐）" autocomplete="off">
-    <select id="roomDays">
-      <option value="1">開放 1 天</option>
-      <option value="3">開放 3 天</option>
-      <option value="7" selected>開放 7 天</option>
-      <option value="30">開放 30 天</option>
-      <option value="0">不限時</option>
-    </select>
-    <button type="submit">建立新房間</button>
-  </form>
-  <p style="color:var(--muted);font-size:13px">建立後，把網址貼給朋友就能一起聊。</p>
-</div>
-
-<!-- 畫面 2：輸入名稱 -->
-<div id="nameBox" class="center hidden">
-  <h2>你的名稱是？</h2>
-  <form id="nameForm" class="col">
-    <input type="text" id="nameInput" maxlength="20" placeholder="輸入想顯示的名稱" autocomplete="off">
-    <button type="submit">進入聊天室</button>
+    <div class="field">聊天室名稱
+      <input type="text" id="roomTitle" maxlength="30" placeholder="例如：週末聚餐（建立後只有房主能修改）" autocomplete="off">
+    </div>
+    <div class="field">開放期限
+      <div class="row"><input type="number" id="roomD" min="0" max="365" value="0"> 天
+        <input type="number" id="roomH" min="0" max="999" value="1"> 小時</div>
+      <label class="row"><input type="checkbox" id="roomUnlimited"> 不限時</label>
+    </div>
+    <div class="field">🔒 通關密碼（4 位數）
+      <div class="hint">朋友進入聊天室時必須輸入。建議用 LINE 私訊另外告訴朋友，不要和網址放在一起。</div>
+      <div id="createPin"></div>
+    </div>
+    <div id="createMsg" class="err"></div>
+    <button type="submit" id="createBtn">建立聊天室</button>
   </form>
 </div>
 
-<!-- 畫面 3：結束 / 找不到 -->
+<!-- 畫面：建立完成 -->
+<div id="created" class="center hidden">
+  <h2>✅ 聊天室已建立</h2>
+  <div class="box">
+    <b>① 朋友邀請網址（貼到 LINE）</b>
+    <input type="text" id="cFriend" readonly>
+    <button class="ghost" type="button" data-copy="cFriend">複製</button>
+    <b>② 通關密碼（另外私訊朋友）</b>
+    <input type="text" id="cPin" readonly>
+    <b>③ 房主專用網址（只有你能用，請自己保存！）</b>
+    <div class="hint">它是管理聊天室的鑰匙。換手機、清除瀏覽器資料後，要靠它才能重新取得房主權限。不要傳給別人。</div>
+    <input type="text" id="cAdmin" readonly>
+    <button class="ghost" type="button" data-copy="cAdmin">複製</button>
+  </div>
+  <button id="cEnter">我已保存，進入聊天室</button>
+</div>
+
+<!-- 畫面：加入聊天室 -->
+<div id="join" class="center hidden">
+  <h2 id="joinTitle">聊天室</h2>
+  <form id="joinForm" class="col">
+    <div id="joinAvatar" class="col0"></div>
+    <input type="text" id="joinName" maxlength="20" placeholder="輸入想顯示的名稱" autocomplete="off">
+    <div id="joinPinWrap" class="field" style="align-items:center;text-align:center">
+      🔒 請輸入通關密碼
+      <div class="hint">本次約定會面日期為 4 位數通關密碼，若尚未確定日期，請輸入今天日期</div>
+      <div id="joinPin"></div>
+    </div>
+    <div id="joinMsg" class="err"></div>
+    <button type="submit" id="joinBtn">進入聊天室</button>
+  </form>
+</div>
+
+<!-- 畫面：結束 / 錯誤 -->
 <div id="ended" class="center hidden">
   <h2 id="endedText">這個聊天室已結束</h2>
 </div>
 
-<!-- 畫面 4：聊天室 -->
+<!-- 畫面：聊天室 -->
 <div id="chat" class="hidden">
   <header>
     <div class="top">
       <div class="title" id="roomName"></div>
       <div class="tools">
+        <button class="ghost" id="noticeBtn" title="注意事項／公告">📢<span id="noticeDot" class="dot hidden"></span></button>
+        <button class="ghost" id="attachBtn" title="上傳照片／影片／檔案">📎</button>
         <button class="ghost" id="copyBtn" title="複製邀請網址">📋</button>
         <button class="ghost" id="exportBtn" title="匯出對話">💾</button>
-        <button class="ghost" id="renameBtn" title="改我的名稱">✏️</button>
+        <button class="ghost" id="profileBtn" title="我的名稱與頭像">👤</button>
         <button class="ghost" id="bellBtn" title="開啟通知">🔔</button>
         <button class="ghost" id="themeBtn" title="深色／淺色">🌙</button>
+        <button class="ghost hidden" id="adminBtn" title="房主設定">⚙️</button>
       </div>
     </div>
     <div class="sub">
       <span id="countdown"></span>
       <span id="online"></span>
-      <span id="who"></span>
     </div>
   </header>
+  <div id="attachMenu" class="hidden">
+    <button type="button" id="pickPhoto">🖼 照片</button>
+    <button type="button" id="pickVideo">🎬 影片</button>
+    <button type="button" id="pickFile">📄 檔案</button>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" class="hidden">
+  <input type="file" id="videoInput" accept="video/*" class="hidden">
+  <input type="file" id="anyFileInput" class="hidden">
   <div id="list"></div>
   <div id="typing"></div>
   <div id="status"></div>
   <div id="replyBar" class="hidden"><span id="replyText"></span><button class="ghost" id="replyCancel" type="button">✕</button></div>
-  <div id="emojiBox" class="hidden"></div>
+  <div id="emojiBox" class="popup hidden"></div>
+  <div id="quickBox" class="popup hidden"></div>
+  <div id="atBox" class="popup hidden"></div>
   <form id="sendForm">
-    <button type="button" class="ghost" id="fileBtn" title="傳送圖片或檔案">＋</button>
-    <input type="file" id="fileInput" class="hidden">
+    <button type="button" class="ghost" id="quickBtn" title="常用回覆">💬</button>
     <button type="button" class="ghost" id="emojiBtn" title="表情符號">😊</button>
+    <button type="button" class="ghost" id="atBtn" title="標註成員">@</button>
     <input type="text" id="msgInput" placeholder="輸入訊息…" autocomplete="off" maxlength="2000">
     <button type="submit">送出</button>
   </form>
+</div>
+
+<!-- 視窗：注意事項／公告 -->
+<div id="noticeModal" class="modal hidden">
+  <div class="sheet">
+    <h3>📢 聊天室資訊 <button class="ghost" data-close>✕</button></h3>
+    <div class="tabs"><button id="tabNotice">注意事項</button><button id="tabAnn" class="off">公告</button></div>
+    <div id="paneNotice">
+      <div id="noticeView" class="view"></div>
+      <div id="noticeEditWrap" class="hidden col0" style="align-items:stretch">
+        <textarea id="noticeEdit" maxlength="2000" placeholder="輸入注意事項"></textarea>
+        <button id="noticeSave">儲存注意事項</button>
+      </div>
+    </div>
+    <div id="paneAnn" class="hidden">
+      <div id="annView" class="view"></div>
+      <div id="annEditWrap" class="hidden col0" style="align-items:stretch">
+        <textarea id="annEdit" maxlength="2000" placeholder="輸入公告（例如：這週六 18:00 聚餐）"></textarea>
+        <button id="annSave">儲存公告</button>
+      </div>
+    </div>
+    <div id="noticeMsg" class="err"></div>
+    <div class="ver" id="verText"></div>
+  </div>
+</div>
+
+<!-- 視窗：我的資料 -->
+<div id="profileModal" class="modal hidden">
+  <div class="sheet">
+    <h3>👤 我的名稱與頭像 <button class="ghost" data-close>✕</button></h3>
+    <div id="profileAvatar" class="col0"></div>
+    <div class="field">名稱<input type="text" id="profileName" maxlength="20" autocomplete="off"></div>
+    <div id="profileMsg" class="err"></div>
+    <button id="profileSave">儲存</button>
+  </div>
+</div>
+
+<!-- 視窗：房主設定 -->
+<div id="adminModal" class="modal hidden">
+  <div class="sheet">
+    <h3>⚙️ 房主設定 <button class="ghost" data-close>✕</button></h3>
+    <div class="field">聊天室名稱<input type="text" id="adminTitle" maxlength="30"></div>
+    <div class="field">變更開放期限（從現在起重新計算，不改請留空）
+      <div class="row"><input type="number" id="adminD" min="0" max="365" placeholder="天"> 天
+        <input type="number" id="adminH" min="0" max="999" placeholder="時"> 小時</div>
+      <label class="row"><input type="checkbox" id="adminUnlimited"> 改為不限時</label>
+    </div>
+    <div class="field">更換通關密碼（不改請留空）
+      <div class="hint">已經進來過的朋友不受影響，之後新加入的人要輸入新密碼。</div>
+      <div id="adminPin"></div>
+    </div>
+    <div id="adminMsg" class="err"></div>
+    <button id="adminSave">儲存設定</button>
+    <button class="ghost" id="adminCopyKey">複製房主專用網址</button>
+    <button class="danger" id="adminClear">🗑 清空聊天記錄與檔案</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -124,12 +291,16 @@
 /* ============ 只需要改這三行 ============ */
 const SUPABASE_URL = "https://sumbrbigoixdyaqqayll.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DTg89c32RlO8q1V0ukmJog__dGzTQrV";
-const SHARE_BASE = "";   // 選填：搬到新網址後，填這裡（例如 "https://my-chat.pages.dev/"），「複製網址」就會用新網址
+const SHARE_BASE = "";   // 選填：正式上線搬到新網址後填這裡（例如 "https://my-chat.pages.dev/"）
 /* ======================================== */
 
+const APP_VERSION = "V3";
+const APP_DATE = "2026-10-09";
 const MAX_MB = 10;
+const BUCKET = "chat-files";
 const $ = id => document.getElementById(id);
 
+/* ---------- 小工具 ---------- */
 function rand(n) {
   const a = new Uint8Array(n);
   crypto.getRandomValues(a);
@@ -140,158 +311,416 @@ function pad2(n) { return String(n).padStart(2, "0"); }
 function fmtTime(s) {
   return new Date(s).toLocaleString("zh-TW", { hour12: false, month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
-function snippet(m) {
-  return (m.content || (m.file_name ? "[檔案] " + m.file_name : "")).slice(0, 40);
+function snippet(m) { return (m.content || (m.file_name ? "[檔案] " + m.file_name : "")).slice(0, 40); }
+function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); alert("已複製"); }
+  catch (e) { prompt("請手動複製：", t); }
 }
 
-const room = location.hash.slice(1);
-const cid = (() => {
-  let c = null;
-  try { c = localStorage.getItem("chat_cid"); } catch (e) {}
-  if (!c) { c = rand(12); try { localStorage.setItem("chat_cid", c); } catch (e) {} }
-  return c;
-})();
-let myName = "";
-try { myName = localStorage.getItem("chat_name") || ""; } catch (e) {}
-
-let db, roomInfo, channel, pollTimer;
+/* ---------- 全域狀態 ---------- */
+let db, uid = "", roomId = "", adminKey = "";
+let roomInfo = null, isAdmin = false;
+let me = { name: "", avatar: "" };
+let channel = null, pollTimer = null, tickTimer = null, refreshTimer = null;
 let baseTitle = "聊天室";
-let lastId = 0;
-let replyTo = null;
+let lastId = 0, replyTo = null;
 const seen = new Set();
 const msgMap = new Map();
+const members = new Map();
 const typers = {};
+const legacyCid = lsGet("chat_cid");
 
 /* ---------- 畫面切換 ---------- */
 function show(id) {
-  ["home", "nameBox", "ended", "chat"].forEach(x => $(x).classList.toggle("hidden", x !== id));
+  ["home", "created", "join", "ended", "chat"].forEach(x => $(x).classList.toggle("hidden", x !== id));
 }
 function showEnded(t) { $("endedText").textContent = t; show("ended"); }
 function setStatus(t) { $("status").textContent = t || ""; }
+function openModal(id) { $(id).classList.remove("hidden"); }
+function closeModals() { document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden")); }
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = closeModals);
+document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) closeModals(); }));
+document.querySelectorAll("[data-copy]").forEach(b => b.onclick = () => copyText($(b.dataset.copy).value));
+function closePopups() { ["emojiBox", "quickBox", "atBox", "attachMenu"].forEach(id => $(id).classList.add("hidden")); }
+document.addEventListener("click", e => {
+  const keep = ["emojiBox", "quickBox", "atBox", "attachMenu", "emojiBtn", "quickBtn", "atBtn", "attachBtn"];
+  if (!keep.some(id => $(id).contains(e.target))) closePopups();
+});
 
 /* ---------- 深色模式 ---------- */
+let theme = lsGet("chat_theme");
+if (!theme) { try { theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } catch (e) { theme = "light"; } }
 function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   $("themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
 }
-let theme = "light";
-try { theme = localStorage.getItem("chat_theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); } catch (e) {}
 applyTheme(theme);
-$("themeBtn").onclick = () => {
-  theme = theme === "dark" ? "light" : "dark";
-  applyTheme(theme);
-  try { localStorage.setItem("chat_theme", theme); } catch (e) {}
-};
+$("themeBtn").onclick = () => { theme = theme === "dark" ? "light" : "dark"; applyTheme(theme); lsSet("chat_theme", theme); };
 
-/* ---------- 初始化 ---------- */
+/* ---------- 4 碼輸入框 ---------- */
+function makePin(root) {
+  root.innerHTML = "";
+  root.className = "pinrow";
+  const boxes = [];
+  for (let i = 0; i < 4; i++) {
+    const b = document.createElement("input");
+    b.type = "tel"; b.inputMode = "numeric"; b.maxLength = 1; b.className = "pinbox"; b.autocomplete = "off";
+    b.addEventListener("input", () => {
+      b.value = b.value.replace(/\D/g, "").slice(0, 1);
+      if (b.value && i < 3) boxes[i + 1].focus();
+    });
+    b.addEventListener("keydown", e => {
+      if (e.key === "Backspace" && !b.value && i > 0) { boxes[i - 1].focus(); boxes[i - 1].value = ""; }
+    });
+    b.addEventListener("paste", e => {
+      const t = ((e.clipboardData && e.clipboardData.getData("text")) || "").replace(/\D/g, "").slice(0, 4);
+      if (!t) return;
+      e.preventDefault();
+      t.split("").forEach((c, k) => { boxes[k].value = c; });
+      boxes[Math.min(t.length, 3)].focus();
+    });
+    root.appendChild(b); boxes.push(b);
+  }
+  return {
+    get: () => boxes.map(b => b.value).join(""),
+    clear: () => { boxes.forEach(b => { b.value = ""; }); boxes[0].focus(); },
+    focus: () => boxes[0].focus()
+  };
+}
+
+/* ---------- 頭像 ---------- */
+const PRESETS = ["🐱", "🐶", "🐰", "🦊", "🐼", "🐯", "🐸", "🐵", "🦁", "🐧", "🐻", "🐨"];
+function safeAvatarUrl(u) {
+  return typeof u === "string" && u.startsWith(SUPABASE_URL + "/storage/v1/object/public/" + BUCKET + "/");
+}
+function paintAvatar(el, av, local) {
+  el.textContent = "";
+  if (local || safeAvatarUrl(av)) {
+    const img = document.createElement("img");
+    img.src = av; img.alt = "";
+    el.appendChild(img);
+  } else if (typeof av === "string" && av.startsWith("emoji:")) {
+    el.textContent = av.slice(6);
+  } else {
+    el.textContent = "🙂";
+  }
+}
+function repaintAvatars(userId) {
+  const m = members.get(userId);
+  document.querySelectorAll('.avatar[data-uid="' + userId + '"]').forEach(el => paintAvatar(el, m && m.avatar));
+}
+async function resizeImage(file, size) {
+  const bmp = await createImageBitmap(file);
+  const s = Math.min(bmp.width, bmp.height);
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  c.getContext("2d").drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, size, size);
+  return new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
+}
+function makeAvatarPicker(root, current) {
+  root.innerHTML = "";
+  const state = { emoji: null, blob: null, url: null, previewUrl: null };
+  if (typeof current === "string" && current.startsWith("emoji:")) state.emoji = current.slice(6);
+  else if (safeAvatarUrl(current)) state.url = current;
+  else state.emoji = PRESETS[Math.floor(Math.random() * PRESETS.length)];
+
+  const preview = document.createElement("div");
+  preview.className = "avatar big";
+  const grid = document.createElement("div");
+  grid.className = "avgrid";
+  const up = document.createElement("button");
+  up.type = "button"; up.className = "ghost"; up.textContent = "📷 上傳我的照片";
+  const file = document.createElement("input");
+  file.type = "file"; file.accept = "image/*"; file.className = "hidden";
+  const hint = document.createElement("div");
+  hint.className = "hint"; hint.textContent = "選一個圖示，或上傳自己的照片（會自動裁成圓形小圖）";
+
+  function refresh() {
+    if (state.blob) paintAvatar(preview, state.previewUrl, true);
+    else if (state.emoji) paintAvatar(preview, "emoji:" + state.emoji);
+    else paintAvatar(preview, state.url);
+    grid.querySelectorAll("button").forEach(b => b.classList.toggle("on", !state.blob && b.textContent === state.emoji));
+  }
+  PRESETS.forEach(em => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = em;
+    b.onclick = () => { state.emoji = em; state.blob = null; refresh(); };
+    grid.appendChild(b);
+  });
+  up.onclick = () => file.click();
+  file.onchange = async () => {
+    const f = file.files[0];
+    file.value = "";
+    if (!f) return;
+    try {
+      state.blob = await resizeImage(f, 160);
+      if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
+      state.previewUrl = URL.createObjectURL(state.blob);
+      refresh();
+    } catch (e) { alert("無法讀取這張圖片，請換一張（建議 JPG 或 PNG）。"); }
+  };
+  root.append(preview, grid, up, file, hint);
+  refresh();
+  return {
+    async resolve() {
+      if (state.blob) {
+        const path = roomId + "/avatars/" + uid + "-" + Date.now() + ".jpg";
+        const { error } = await db.storage.from(BUCKET).upload(path, state.blob, { contentType: "image/jpeg" });
+        if (error) throw error;
+        return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+      }
+      if (state.emoji) return "emoji:" + state.emoji;
+      return state.url;
+    }
+  };
+}
+
+/* ---------- 啟動 ---------- */
+function parseHash() {
+  const h = location.hash.slice(1);
+  const i = h.indexOf(".");
+  roomId = i < 0 ? h : h.slice(0, i);
+  adminKey = i < 0 ? "" : h.slice(i + 1);
+}
+window.addEventListener("hashchange", () => location.reload());
+
+let createPin, joinPin, adminPin, joinAvatarPicker, profileAvatarPicker;
+
 async function init() {
   if (SUPABASE_URL.includes("貼上") || SUPABASE_KEY.includes("貼上")) {
-    show("ended");
-    $("endedText").textContent = "尚未完成設定：請在 index.html 最上方填入 Supabase 網址與金鑰。";
+    showEnded("尚未完成設定：請在 index.html 最上方填入 Supabase 網址與金鑰。");
     return;
   }
   db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  if (!validRoom(room)) { show("home"); return; }
-
-  const { data, error } = await db.from("rooms").select("*").eq("room", room).maybeSingle();
-  if (error) { showEnded("讀取聊天室失敗：" + error.message); return; }
-  if (!data) { showEnded("找不到這個聊天室，請確認網址是否完整。"); return; }
-  roomInfo = data;
-  if (isExpired()) { showEnded("這個聊天室已結束。"); return; }
-  if (!myName) { show("nameBox"); $("nameInput").focus(); return; }
-  startChat();
-}
-
-window.addEventListener("hashchange", () => location.reload());
-
-$("createForm").onsubmit = async e => {
-  e.preventDefault();
-  const title = $("roomTitle").value.trim() || "聊天室";
-  const days = Number($("roomDays").value);
-  const id = rand(12);
-  const expires_at = days > 0 ? new Date(Date.now() + days * 86400000).toISOString() : null;
-  const { error } = await db.from("rooms").insert({ room: id, title, expires_at });
-  if (error) { alert("建立失敗：" + error.message); return; }
-  location.hash = id;
-};
-
-$("nameForm").onsubmit = e => {
-  e.preventDefault();
-  const n = $("nameInput").value.trim();
-  if (!n) return;
-  myName = n;
-  try { localStorage.setItem("chat_name", n); } catch (err) {}
-  startChat();
-};
-
-/* ---------- 房間期限 ---------- */
-function isExpired() { return roomInfo.expires_at && new Date(roomInfo.expires_at) <= new Date(); }
-
-function updateCountdown() {
-  const el = $("countdown");
-  if (!roomInfo.expires_at) { el.textContent = "⏳ 不限時"; return; }
-  const diff = new Date(roomInfo.expires_at) - Date.now();
-  if (diff <= 0) { lockRoom(); return; }
-  if (diff < 3600000) { el.textContent = "⏳ 剩餘不到 1 小時"; return; }
-  const h = Math.floor(diff / 3600000);
-  el.textContent = "⏳ 剩餘 " + Math.floor(h / 24) + "天:" + pad2(h % 24) + "小時";
-}
-
-function lockRoom() {
-  clearInterval(pollTimer);
-  if (channel) db.removeChannel(channel);
-  showEnded("這個聊天室已到期結束。");
-}
-
-async function refreshRoom() {
-  const { data } = await db.from("rooms").select("*").eq("room", room).maybeSingle();
-  if (!data) return;
-  roomInfo = data;
-  baseTitle = data.title;
-  $("roomName").textContent = data.title;
-  if (document.hidden === false) document.title = data.title;
-  updateCountdown();
-}
-
-function updateWho() { $("who").textContent = "你是：" + myName; }
-
-/* ---------- 開始聊天 ---------- */
-async function startChat() {
-  show("chat");
-  baseTitle = roomInfo.title;
-  document.title = baseTitle;
-  $("roomName").textContent = baseTitle;
-  updateWho();
-  updateCountdown();
-  setInterval(updateCountdown, 30000);
-  setInterval(refreshRoom, 60000);
-
-  const { data, error } = await db.from("messages").select("*")
-    .eq("room", room).order("id", { ascending: false }).limit(500);
-  if (error) setStatus("讀取失敗：" + error.message);
-  else {
-    data.reverse().forEach(m => addMsg(m, false));
-    $("list").scrollTop = $("list").scrollHeight;
+  parseHash();
+  try {
+    let { data: { session } } = await db.auth.getSession();
+    if (!session) {
+      const r = await db.auth.signInAnonymously();
+      if (r.error) throw r.error;
+      session = r.data.session;
+    }
+    uid = session.user.id;
+    try { db.realtime.setAuth(session.access_token); } catch (e) {}
+  } catch (e) {
+    showEnded("無法建立連線：" + e.message + "。請確認 Supabase 已開啟「Allow anonymous sign-ins」。");
+    return;
   }
 
-  channel = db.channel("room-" + room, { config: { presence: { key: cid } } })
-    .on("postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages", filter: "room=eq." + room },
+  if (!validRoom(roomId)) {
+    createPin = makePin($("createPin"));
+    show("home");
+    return;
+  }
+
+  const { data: pub, error } = await db.rpc("room_public", { p_room: roomId });
+  if (error) { showEnded("讀取聊天室失敗：" + error.message + "（是否已執行 update_v3.sql？）"); return; }
+  if (!pub) { showEnded("找不到這個聊天室，請確認網址是否完整。"); return; }
+  if (pub.expires_at && new Date(pub.expires_at) <= new Date()) { showEnded("這個聊天室已結束。"); return; }
+
+  if (adminKey) {
+    lsSet("chat_ak_" + roomId, adminKey);
+    history.replaceState(null, "", location.pathname + location.search + "#" + roomId);
+  } else {
+    adminKey = lsGet("chat_ak_" + roomId);
+  }
+
+  const { data: mine } = await db.from("room_members").select("*").eq("room", roomId).eq("user_id", uid).maybeSingle();
+  if (mine) {
+    me = { name: mine.name, avatar: mine.avatar || "" };
+    await enterChat(false);
+  } else {
+    showJoin(pub);
+  }
+}
+
+/* ---------- 建立聊天室 ---------- */
+$("roomUnlimited").onchange = () => { $("roomD").disabled = $("roomH").disabled = $("roomUnlimited").checked; };
+$("createForm").onsubmit = async e => {
+  e.preventDefault();
+  const msg = $("createMsg");
+  msg.textContent = "";
+  const title = $("roomTitle").value.trim() || "聊天室";
+  let expires = null;
+  if (!$("roomUnlimited").checked) {
+    const d = Math.max(0, parseInt($("roomD").value || "0", 10) || 0);
+    const h = Math.max(0, parseInt($("roomH").value || "0", 10) || 0);
+    const ms = (d * 24 + h) * 3600000;
+    if (ms <= 0) { msg.textContent = "開放期限至少要 1 小時（或勾選「不限時」）"; return; }
+    if (ms > 366 * 86400000) { msg.textContent = "期限最長 365 天"; return; }
+    expires = new Date(Date.now() + ms).toISOString();
+  }
+  const pin = createPin.get();
+  if (pin.length !== 4) { msg.textContent = "請設定 4 位數通關密碼"; return; }
+  $("createBtn").disabled = true;
+  const id = rand(12);
+  const { data: key, error } = await db.rpc("create_room", { p_room: id, p_title: title, p_expires_at: expires, p_pin: pin });
+  $("createBtn").disabled = false;
+  if (error) { msg.textContent = "建立失敗：" + error.message; return; }
+  lsSet("chat_ak_" + id, key);
+  const base = (SHARE_BASE || (location.origin + location.pathname)).split("#")[0];
+  $("cFriend").value = base + "#" + id;
+  $("cPin").value = pin;
+  $("cAdmin").value = base + "#" + id + "." + key;
+  $("cEnter").onclick = () => { location.hash = id + "." + key; };
+  show("created");
+};
+
+/* ---------- 加入聊天室 ---------- */
+let needPin = false;
+function showJoin(pub) {
+  $("joinTitle").textContent = pub.title;
+  needPin = !!pub.has_pin && !adminKey;
+  $("joinPinWrap").classList.toggle("hidden", !needPin);
+  joinPin = makePin($("joinPin"));
+  joinAvatarPicker = makeAvatarPicker($("joinAvatar"), "");
+  $("joinName").value = lsGet("chat_name");
+  show("join");
+  $("joinName").focus();
+}
+$("joinForm").onsubmit = async e => {
+  e.preventDefault();
+  const msg = $("joinMsg");
+  msg.textContent = "";
+  const name = $("joinName").value.trim();
+  if (!name) { msg.textContent = "請輸入名稱"; return; }
+  const pin = needPin ? joinPin.get() : null;
+  if (needPin && pin.length !== 4) { msg.textContent = "請輸入 4 位數通關密碼"; return; }
+  $("joinBtn").disabled = true;
+  const { data, error } = await db.rpc("join_room", { p_room: roomId, p_pin: pin, p_name: name, p_admin_key: adminKey || null });
+  if (error) { msg.textContent = "進入失敗：" + error.message; $("joinBtn").disabled = false; return; }
+  if (!data.ok) {
+    const map = {
+      wrong_pin: "通關密碼不正確，請再試一次。",
+      locked: "輸入錯誤次數過多，請 10 分鐘後再試。",
+      expired: "這個聊天室已結束。",
+      not_found: "找不到這個聊天室。",
+      need_name: "請輸入名稱。",
+      no_session: "連線異常，請重新整理後再試。"
+    };
+    msg.textContent = map[data.reason] || "無法進入聊天室。";
+    if (data.reason === "wrong_pin") joinPin.clear();
+    $("joinBtn").disabled = false;
+    return;
+  }
+  me.name = name;
+  lsSet("chat_name", name);
+  try {
+    me.avatar = await joinAvatarPicker.resolve();
+    await db.from("room_members").update({ avatar: me.avatar }).eq("room", roomId).eq("user_id", uid);
+  } catch (err) { /* 頭像失敗不影響進入，可稍後在 👤 重設 */ }
+  $("joinBtn").disabled = false;
+  await enterChat(true);
+};
+
+/* ---------- 進入聊天室 ---------- */
+async function fetchRoom() {
+  const { data, error } = await db.rpc("get_room", { p_room: roomId });
+  return error ? null : data;
+}
+
+async function enterChat(newJoin) {
+  let info = await fetchRoom();
+  if (info && !info.is_admin && adminKey) {
+    await db.rpc("join_room", { p_room: roomId, p_pin: null, p_name: null, p_admin_key: adminKey });
+    info = await fetchRoom();
+  }
+  if (!info) { showEnded("無法進入這個聊天室。"); return; }
+  roomInfo = info;
+  isAdmin = !!info.is_admin;
+  if (info.expires_at && new Date(info.expires_at) <= new Date()) { showEnded("這個聊天室已結束。"); return; }
+
+  show("chat");
+  baseTitle = info.title;
+  document.title = baseTitle;
+  $("roomName").textContent = baseTitle;
+  $("adminBtn").classList.toggle("hidden", !isAdmin);
+  $("verText").textContent = "聊天室版本 " + APP_VERSION + "　" + APP_DATE;
+  updateCountdown();
+  updateNoticeDot();
+  tickTimer = setInterval(updateCountdown, 1000);
+  refreshTimer = setInterval(refreshRoom, 60000);
+
+  await loadMembers();
+  if (!members.has(uid)) members.set(uid, { user_id: uid, name: me.name, avatar: me.avatar });
+  await loadHistory();
+
+  channel = db.channel("room-" + roomId, { config: { presence: { key: uid } } })
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: "room=eq." + roomId },
       p => addMsg(p.new, true))
+    .on("postgres_changes", { event: "*", schema: "public", table: "room_members", filter: "room=eq." + roomId },
+      p => { const m = p.new; if (m && m.user_id) { members.set(m.user_id, m); repaintAvatars(m.user_id); } })
     .on("presence", { event: "sync" }, updatePresence)
     .on("broadcast", { event: "typing" }, ({ payload }) => {
-      if (payload && payload.cid !== cid) { typers[payload.cid] = { name: payload.name, t: Date.now() }; renderTyping(); }
+      if (payload && payload.uid !== uid) { typers[payload.uid] = { name: payload.name, t: Date.now() }; renderTyping(); }
     })
-    .subscribe(async status => {
-      if (status === "SUBSCRIBED") await channel.track({ name: myName });
-    });
+    .on("broadcast", { event: "cleared" }, () => { resetList(); loadHistory(); })
+    .subscribe(async status => { if (status === "SUBSCRIBED") await channel.track({ name: me.name }); });
 
   pollTimer = setInterval(async () => {
     if (document.hidden) return;
-    const { data } = await db.from("messages").select("*")
-      .eq("room", room).gt("id", lastId).order("id", { ascending: true });
+    const { data } = await db.from("messages").select("*").eq("room", roomId).gt("id", lastId).order("id", { ascending: true });
     if (data) data.forEach(m => addMsg(m, true));
   }, 5000);
+
+  // 進入通知：新加入一定顯示；重新整理（10 分鐘內）不重複洗版
+  const key = "chat_lastjoin_" + roomId;
+  const last = Number(lsGet(key) || 0);
+  if (newJoin || Date.now() - last > 10 * 60000) {
+    lsSet(key, String(Date.now()));
+    await insertMsg({ kind: "system", content: me.name + (newJoin ? " 加入了聊天室" : " 進入了聊天室") });
+  }
+}
+
+async function loadMembers() {
+  const { data } = await db.from("room_members").select("*").eq("room", roomId);
+  (data || []).forEach(m => members.set(m.user_id, m));
+}
+async function loadHistory() {
+  const { data, error } = await db.from("messages").select("*").eq("room", roomId).order("id", { ascending: false }).limit(500);
+  if (error) { setStatus("讀取失敗：" + error.message); return; }
+  data.reverse().forEach(m => addMsg(m, false));
+  $("list").scrollTop = $("list").scrollHeight;
+}
+function resetList() {
+  $("list").innerHTML = "";
+  seen.clear(); msgMap.clear(); lastId = 0; replyTo = null;
+  $("replyBar").classList.add("hidden");
+}
+
+/* ---------- 期限倒數 ---------- */
+function updateCountdown() {
+  const el = $("countdown");
+  if (!roomInfo) return;
+  if (!roomInfo.expires_at) { el.textContent = "⏳ 不限時"; return; }
+  const diff = new Date(roomInfo.expires_at) - Date.now();
+  if (diff <= 0) { lockRoom(); return; }
+  if (diff < 3600000) {
+    const s = Math.floor(diff / 1000);
+    el.textContent = "⏳ 剩餘 " + pad2(Math.floor(s / 60)) + ":" + pad2(s % 60) + "（分:秒）";
+  } else {
+    const h = Math.floor(diff / 3600000);
+    el.textContent = "⏳ 剩餘 " + Math.floor(h / 24) + "天:" + pad2(h % 24) + "小時";
+  }
+}
+function lockRoom() {
+  clearInterval(pollTimer); clearInterval(tickTimer); clearInterval(refreshTimer);
+  if (channel) db.removeChannel(channel);
+  showEnded("這個聊天室已到期結束。");
+}
+async function refreshRoom() {
+  const info = await fetchRoom();
+  if (!info) return;
+  roomInfo = info;
+  isAdmin = !!info.is_admin;
+  baseTitle = info.title;
+  $("roomName").textContent = info.title;
+  if (!document.hidden) document.title = info.title;
+  $("adminBtn").classList.toggle("hidden", !isAdmin);
+  updateCountdown();
+  updateNoticeDot();
 }
 
 /* ---------- 上線人數 / 輸入中 ---------- */
@@ -302,24 +731,29 @@ function updatePresence() {
 }
 function renderTyping() {
   const now = Date.now(), names = [];
-  for (const k in typers) {
-    if (now - typers[k].t < 3500) names.push(typers[k].name); else delete typers[k];
-  }
+  for (const k in typers) { if (now - typers[k].t < 3500) names.push(typers[k].name); else delete typers[k]; }
   $("typing").textContent = names.length ? names.join("、") + " 正在輸入…" : "";
 }
 setInterval(renderTyping, 1000);
-
 let lastTypingSent = 0;
-$("msgInput").addEventListener("input", () => {
-  const now = Date.now();
-  if (channel && now - lastTypingSent > 2000) {
-    lastTypingSent = now;
-    channel.send({ type: "broadcast", event: "typing", payload: { cid, name: myName } });
-  }
-});
 
 /* ---------- 顯示訊息 ---------- */
-function isMine(m) { return m.client_id ? m.client_id === cid : m.name === myName; }
+function isMine(m) { return m.user_id ? m.user_id === uid : (!!m.client_id && m.client_id === legacyCid); }
+
+function renderRich(el, text) {
+  const names = Array.from(members.values()).map(x => x.name).filter(Boolean).sort((a, b) => b.length - a.length);
+  const alts = ["全部人"].concat(names).map(x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const re = new RegExp("@(" + alts.join("|") + ")", "g");
+  let last = 0, mm;
+  while ((mm = re.exec(text))) {
+    if (mm.index > last) el.appendChild(document.createTextNode(text.slice(last, mm.index)));
+    const s = document.createElement("span");
+    s.className = "at"; s.textContent = mm[0];
+    el.appendChild(s);
+    last = mm.index + mm[0].length;
+  }
+  if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+}
 
 function addMsg(m, live) {
   if (seen.has(m.id)) return;
@@ -329,43 +763,52 @@ function addMsg(m, live) {
 
   const list = $("list");
   const near = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+  const mine = isMine(m);
 
   if (m.kind === "system") {
     const d = document.createElement("div");
     d.className = "sys"; d.id = "m" + m.id;
-    d.textContent = m.content;
+    d.textContent = fmtTime(m.created_at) + "　" + m.content;
     list.appendChild(d);
   } else {
-    const mine = isMine(m);
+    const mentionedMe = !mine && (m.mention_all || (m.mentions || []).includes(uid));
     const wrap = document.createElement("div");
     wrap.className = "msg" + (mine ? " me" : "");
     wrap.id = "m" + m.id;
+
+    const av = document.createElement("div");
+    av.className = "avatar"; av.dataset.uid = m.user_id || "";
+    const mem = members.get(m.user_id);
+    paintAvatar(av, mem && mem.avatar);
+
+    const col = document.createElement("div");
+    col.className = "col";
 
     const meta = document.createElement("div");
     meta.className = "meta";
     const who = document.createElement("span");
     who.textContent = m.name + "　" + fmtTime(m.created_at);
     const rb = document.createElement("button");
-    rb.type = "button"; rb.className = "rbtn"; rb.textContent = "↩"; rb.title = "回覆";
+    rb.type = "button"; rb.className = "rbtn"; rb.textContent = "↩"; rb.title = "回覆這則訊息";
     rb.onclick = () => setReply(m);
-    meta.appendChild(who); meta.appendChild(rb);
+    meta.append(who, rb);
 
     const bubble = document.createElement("div");
-    bubble.className = "bubble";
+    bubble.className = "bubble" + (mentionedMe ? " mentioned" : "");
+    bubble.ondblclick = () => setReply(m);
 
     if (m.reply_to) {
       const o = msgMap.get(m.reply_to);
       const q = document.createElement("div");
       q.className = "quote";
-      q.textContent = o ? "↩ " + o.name + "：" + snippet(o) : "↩ （較早的訊息）";
+      q.textContent = o ? "↩ 回覆 " + o.name + "：" + snippet(o) : "↩ 回覆較早的訊息";
       q.onclick = () => {
         const t = document.getElementById("m" + m.reply_to);
         if (t) { t.scrollIntoView({ block: "center", behavior: "smooth" }); t.classList.add("flash"); setTimeout(() => t.classList.remove("flash"), 1500); }
       };
       bubble.appendChild(q);
     }
-
-    if (m.content) bubble.appendChild(document.createTextNode(m.content));
+    if (m.content) renderRich(bubble, m.content);
 
     if (m.file_url && /^https:\/\//.test(m.file_url)) {
       if (m.content) bubble.appendChild(document.createElement("br"));
@@ -392,35 +835,30 @@ function addMsg(m, live) {
       }
     }
 
-    wrap.appendChild(meta);
-    wrap.appendChild(bubble);
+    col.append(meta, bubble);
+    wrap.append(av, col);
     list.appendChild(wrap);
-    if (live && !mine) notify(m);
+    if (live && !mine) notify(m, mentionedMe);
   }
-
-  if (near || isMine(m)) list.scrollTop = list.scrollHeight;
+  if (near || mine) list.scrollTop = list.scrollHeight;
 }
 
 /* ---------- 新訊息通知 ---------- */
 let unread = 0, flashTimer = null;
-function notify(m) {
+function notify(m, mentioned) {
   if (!document.hidden) return;
   unread++;
   if (!flashTimer) {
     let on = false;
-    flashTimer = setInterval(() => {
-      on = !on;
-      document.title = on ? "💬 (" + unread + ") 新訊息" : baseTitle;
-    }, 1000);
+    flashTimer = setInterval(() => { on = !on; document.title = on ? "💬 (" + unread + ") 新訊息" : baseTitle; }, 1000);
   }
   if ("Notification" in window && Notification.permission === "granted") {
-    try { new Notification(baseTitle, { body: m.name + "：" + snippet(m), tag: "chat-" + room }); } catch (e) {}
+    try { new Notification(baseTitle, { body: (mentioned ? "【@你】" : "") + m.name + "：" + snippet(m), tag: "chat-" + roomId }); } catch (e) {}
   }
 }
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
-    unread = 0;
-    clearInterval(flashTimer); flashTimer = null;
+    unread = 0; clearInterval(flashTimer); flashTimer = null;
     if (roomInfo) document.title = baseTitle;
   }
 });
@@ -433,21 +871,29 @@ $("bellBtn").onclick = async () => {
 };
 
 /* ---------- 送出訊息 ---------- */
+function collectMentions(text) {
+  const ids = [];
+  members.forEach((m, id) => { if (id !== uid && m.name && text.includes("@" + m.name)) ids.push(id); });
+  return { mentions: ids, mention_all: text.includes("@全部人") };
+}
 async function insertMsg(row) {
-  const payload = { room, name: myName, client_id: cid, ...row };
-  if (row.kind !== "system" && replyTo) payload.reply_to = replyTo.id;
+  const payload = Object.assign({ room: roomId, name: me.name, user_id: uid }, row);
+  if (row.kind !== "system") {
+    if (replyTo) payload.reply_to = replyTo.id;
+    if (row.content) Object.assign(payload, collectMentions(row.content));
+  }
   const { data, error } = await db.from("messages").insert(payload).select().single();
   if (error) { setStatus("送出失敗：" + error.message); return; }
   setStatus("");
   if (payload.reply_to) clearReply();
   addMsg(data, false);
 }
-
 $("sendForm").onsubmit = async e => {
   e.preventDefault();
   const t = $("msgInput").value.trim();
   if (!t) return;
   $("msgInput").value = "";
+  closePopups();
   await insertMsg({ content: t });
 };
 
@@ -461,25 +907,24 @@ function setReply(m) {
 function clearReply() { replyTo = null; $("replyBar").classList.add("hidden"); }
 $("replyCancel").onclick = clearReply;
 
-/* ---------- 檔案 ---------- */
+/* ---------- 檔案（照片／影片／檔案） ---------- */
 async function sendFile(file) {
   if (file.size > MAX_MB * 1024 * 1024) { setStatus("檔案超過 " + MAX_MB + "MB，無法上傳"); return; }
   setStatus("上傳中…");
   const ext = ((file.name.split(".").pop() || "bin").replace(/[^A-Za-z0-9]/g, "").slice(0, 8)) || "bin";
-  const path = room + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
-  const { error } = await db.storage.from("chat-files").upload(path, file, {
-    contentType: file.type || "application/octet-stream"
-  });
+  const path = roomId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+  const { error } = await db.storage.from(BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream" });
   if (error) { setStatus("上傳失敗：" + error.message); return; }
-  const { data } = db.storage.from("chat-files").getPublicUrl(path);
+  const { data } = db.storage.from(BUCKET).getPublicUrl(path);
   await insertMsg({ file_url: data.publicUrl, file_name: file.name, file_type: file.type || "" });
 }
-$("fileBtn").onclick = () => $("fileInput").click();
-$("fileInput").onchange = async e => {
-  const f = e.target.files[0];
-  e.target.value = "";
-  if (f) await sendFile(f);
-};
+$("attachBtn").onclick = e => { e.stopPropagation(); const w = $("attachMenu").classList.contains("hidden"); closePopups(); if (w) $("attachMenu").classList.remove("hidden"); };
+$("pickPhoto").onclick = () => { closePopups(); $("photoInput").click(); };
+$("pickVideo").onclick = () => { closePopups(); $("videoInput").click(); };
+$("pickFile").onclick = () => { closePopups(); $("anyFileInput").click(); };
+["photoInput", "videoInput", "anyFileInput"].forEach(id => {
+  $(id).onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (f) await sendFile(f); };
+});
 $("msgInput").addEventListener("paste", async e => {
   const files = e.clipboardData && e.clipboardData.files;
   if (files && files.length) { e.preventDefault(); await sendFile(files[0]); }
@@ -487,53 +932,225 @@ $("msgInput").addEventListener("paste", async e => {
 
 /* ---------- 表情符號 ---------- */
 const EMOJIS = "😀 😃 😄 😁 😆 😂 🤣 😊 🙂 😉 😍 🥰 😘 😎 🤔 😅 😭 😢 😡 😴 🥳 🤗 🙄 😱 👍 👎 👏 🙏 💪 🙌 👌 ✌️ 🤝 ❤️ 💔 🔥 ✨ 🎉 🎂 🍻 🍜 🍔 ☕ 🌧️ ☀️ 🌙 💯 ✅ ❌ ❓ ❗".split(" ");
+function insertAtCursor(text) {
+  const el = $("msgInput");
+  const s = el.selectionStart != null ? el.selectionStart : el.value.length;
+  const e2 = el.selectionEnd != null ? el.selectionEnd : s;
+  el.value = el.value.slice(0, s) + text + el.value.slice(e2);
+  const p = s + text.length;
+  el.focus();
+  el.setSelectionRange(p, p);
+}
 EMOJIS.forEach(em => {
   const b = document.createElement("button");
   b.type = "button"; b.textContent = em;
-  b.onclick = () => {
-    const el = $("msgInput");
-    const s = el.selectionStart != null ? el.selectionStart : el.value.length;
-    const e2 = el.selectionEnd != null ? el.selectionEnd : s;
-    el.value = el.value.slice(0, s) + em + el.value.slice(e2);
-    const p = s + em.length;
-    el.setSelectionRange(p, p);
-    el.focus();
-  };
+  b.onclick = () => insertAtCursor(em);
   $("emojiBox").appendChild(b);
 });
-$("emojiBtn").onclick = e => { e.stopPropagation(); $("emojiBox").classList.toggle("hidden"); };
-document.addEventListener("click", e => {
-  if (!$("emojiBox").contains(e.target)) $("emojiBox").classList.add("hidden");
+$("emojiBtn").onclick = e => { e.stopPropagation(); const w = $("emojiBox").classList.contains("hidden"); closePopups(); if (w) $("emojiBox").classList.remove("hidden"); };
+
+/* ---------- 常用回覆 ---------- */
+const QUICK = [
+  ["🙏", "謝謝"], ["👍", "+1"], ["😋", "吃很飽"], ["👌", "沒問題"], ["✅", "收到"], ["🙋", "我可以"],
+  ["🙅", "我不行"], ["🚗", "在路上了"], ["📍", "我到了"], ["⏰", "晚點到"], ["🍜", "吃什麼？"], ["🎉", "約嗎？"],
+  ["📅", "改天吧"], ["🤔", "再看看"], ["💪", "辛苦了"], ["😂", "哈哈哈"], ["🙇", "不好意思"], ["👏", "太讚了"],
+  ["🏃", "等我一下"], ["🏠", "先回家了"], ["🕖", "幾點開始？"], ["💰", "AA 制可以嗎？"]
+];
+QUICK.forEach(([em, t]) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.textContent = em + " " + t;
+  b.onclick = async () => { closePopups(); await insertMsg({ content: t + " " + em }); };
+  $("quickBox").appendChild(b);
+});
+$("quickBtn").onclick = e => { e.stopPropagation(); const w = $("quickBox").classList.contains("hidden"); closePopups(); if (w) $("quickBox").classList.remove("hidden"); };
+
+/* ---------- @ 標註 ---------- */
+function openAt(query) {
+  const q = (query || "").toLowerCase();
+  const items = [{ id: "all", name: "全部人" }];
+  members.forEach((m, id) => { if (id !== uid && m.name) items.push({ id, name: m.name }); });
+  const list = items.filter(it => !q || it.name.toLowerCase().includes(q));
+  const box = $("atBox");
+  box.innerHTML = "";
+  if (!list.length) { box.classList.add("hidden"); return; }
+  list.forEach(it => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = "@" + it.name + (it.id === "all" ? "（所有人）" : "");
+    b.onclick = () => pickAt(it.name);
+    box.appendChild(b);
+  });
+  ["emojiBox", "quickBox", "attachMenu"].forEach(id => $(id).classList.add("hidden"));
+  box.classList.remove("hidden");
+}
+function pickAt(name) {
+  const el = $("msgInput");
+  const pos = el.selectionStart != null ? el.selectionStart : el.value.length;
+  const before = el.value.slice(0, pos), after = el.value.slice(pos);
+  const nb = /@[^\s@]*$/.test(before) ? before.replace(/@[^\s@]*$/, "@" + name + " ") : before + "@" + name + " ";
+  el.value = nb + after;
+  el.focus();
+  el.setSelectionRange(nb.length, nb.length);
+  $("atBox").classList.add("hidden");
+}
+$("atBtn").onclick = e => {
+  e.stopPropagation();
+  if (!$("atBox").classList.contains("hidden")) { closePopups(); return; }
+  openAt("");
+};
+$("msgInput").addEventListener("input", () => {
+  const now = Date.now();
+  if (channel && now - lastTypingSent > 2000) {
+    lastTypingSent = now;
+    channel.send({ type: "broadcast", event: "typing", payload: { uid, name: me.name } });
+  }
+  const el = $("msgInput");
+  const pos = el.selectionStart != null ? el.selectionStart : el.value.length;
+  const m = /(^|\s)@([^\s@]*)$/.exec(el.value.slice(0, pos));
+  if (m) openAt(m[2]); else $("atBox").classList.add("hidden");
 });
 
-/* ---------- 改名（會通知所有人） ---------- */
-$("renameBtn").onclick = async () => {
-  const n = prompt("新的名稱（最多 20 字）：", myName);
-  if (!n) return;
-  const nn = n.trim().slice(0, 20);
-  if (!nn || nn === myName) return;
-  const old = myName;
-  myName = nn;
-  try { localStorage.setItem("chat_name", nn); } catch (e) {}
-  updateWho();
-  if (channel) channel.track({ name: nn });
-  await insertMsg({ kind: "system", content: old + " 改名為 " + nn });
+/* ---------- 注意事項／公告 ---------- */
+function annSig() { return (roomInfo.announcement || "") + "|" + (roomInfo.notice || ""); }
+function updateNoticeDot() {
+  const has = !!(roomInfo.announcement || roomInfo.notice);
+  $("noticeDot").classList.toggle("hidden", !(has && lsGet("chat_ann_" + roomId) !== annSig()));
+}
+function switchTab(which) {
+  $("paneNotice").classList.toggle("hidden", which !== "notice");
+  $("paneAnn").classList.toggle("hidden", which !== "ann");
+  $("tabNotice").classList.toggle("off", which !== "notice");
+  $("tabAnn").classList.toggle("off", which !== "ann");
+}
+$("tabNotice").onclick = () => switchTab("notice");
+$("tabAnn").onclick = () => switchTab("ann");
+$("noticeBtn").onclick = async () => {
+  await refreshRoom();
+  $("noticeMsg").textContent = "";
+  $("noticeView").textContent = roomInfo.notice || "（房主尚未填寫）";
+  $("annView").textContent = roomInfo.announcement || "（目前沒有公告）";
+  $("noticeView").classList.toggle("hidden", isAdmin);
+  $("annView").classList.toggle("hidden", isAdmin);
+  $("noticeEditWrap").classList.toggle("hidden", !isAdmin);
+  $("annEditWrap").classList.toggle("hidden", !isAdmin);
+  $("noticeEdit").value = roomInfo.notice || "";
+  $("annEdit").value = roomInfo.announcement || "";
+  switchTab("notice");
+  lsSet("chat_ann_" + roomId, annSig());
+  $("noticeDot").classList.add("hidden");
+  openModal("noticeModal");
+};
+async function saveRoomPatch(patch, msgEl) {
+  const { error } = await db.rpc("admin_update_room", { p_room: roomId, p_patch: patch });
+  if (error) { msgEl.textContent = "儲存失敗：" + error.message; return false; }
+  msgEl.textContent = "";
+  await refreshRoom();
+  return true;
+}
+$("noticeSave").onclick = async () => {
+  if (await saveRoomPatch({ notice: $("noticeEdit").value }, $("noticeMsg"))) { alert("注意事項已更新"); lsSet("chat_ann_" + roomId, annSig()); }
+};
+$("annSave").onclick = async () => {
+  if (await saveRoomPatch({ announcement: $("annEdit").value }, $("noticeMsg"))) { alert("公告已更新，朋友約 1 分鐘內會看到紅點提示"); lsSet("chat_ann_" + roomId, annSig()); }
 };
 
-/* ---------- 複製網址 / 匯出 ---------- */
-$("copyBtn").onclick = async () => {
-  const base = SHARE_BASE || (location.origin + location.pathname);
-  const url = base.split("#")[0] + "#" + room;
-  try { await navigator.clipboard.writeText(url); alert("已複製，貼到 LINE 給朋友即可"); }
-  catch (e) { prompt("請手動複製這個網址：", url); }
+/* ---------- 我的名稱與頭像 ---------- */
+$("profileBtn").onclick = () => {
+  $("profileMsg").textContent = "";
+  $("profileName").value = me.name;
+  profileAvatarPicker = makeAvatarPicker($("profileAvatar"), me.avatar);
+  openModal("profileModal");
+};
+$("profileSave").onclick = async () => {
+  const msg = $("profileMsg");
+  const nn = $("profileName").value.trim().slice(0, 20);
+  if (!nn) { msg.textContent = "名稱不能空白"; return; }
+  $("profileSave").disabled = true;
+  try {
+    const avatar = await profileAvatarPicker.resolve();
+    const old = me.name;
+    const { error } = await db.from("room_members").update({ name: nn, avatar }).eq("room", roomId).eq("user_id", uid);
+    if (error) throw error;
+    me.name = nn; me.avatar = avatar;
+    lsSet("chat_name", nn);
+    members.set(uid, { user_id: uid, name: nn, avatar });
+    repaintAvatars(uid);
+    if (channel) channel.track({ name: nn });
+    closeModals();
+    if (nn !== old) await insertMsg({ kind: "system", content: old + " 改名為 " + nn });
+  } catch (e) { msg.textContent = "儲存失敗：" + (e.message || e); }
+  $("profileSave").disabled = false;
 };
 
+/* ---------- 房主設定 ---------- */
+$("adminBtn").onclick = () => {
+  $("adminMsg").textContent = "";
+  $("adminTitle").value = roomInfo.title;
+  $("adminD").value = ""; $("adminH").value = "";
+  $("adminUnlimited").checked = false;
+  adminPin = makePin($("adminPin"));
+  openModal("adminModal");
+};
+$("adminSave").onclick = async () => {
+  const msg = $("adminMsg");
+  const patch = { title: $("adminTitle").value };
+  if ($("adminUnlimited").checked) patch.expires_at = null;
+  else if ($("adminD").value !== "" || $("adminH").value !== "") {
+    const d = Math.max(0, parseInt($("adminD").value || "0", 10) || 0);
+    const h = Math.max(0, parseInt($("adminH").value || "0", 10) || 0);
+    const ms = (d * 24 + h) * 3600000;
+    if (ms <= 0) { msg.textContent = "期限至少要 1 小時"; return; }
+    patch.expires_at = new Date(Date.now() + ms).toISOString();
+  }
+  const pin = adminPin.get();
+  if (pin !== "") {
+    if (pin.length !== 4) { msg.textContent = "通關密碼要填滿 4 碼（不改請全部留空）"; return; }
+    patch.pin = pin;
+  }
+  if (await saveRoomPatch(patch, msg)) { closeModals(); alert("設定已儲存"); }
+};
+$("adminCopyKey").onclick = () => {
+  if (!adminKey) { alert("這台裝置沒有保存房主專用網址（可能是用不同裝置取得房主權限）。請使用建立聊天室時保存的那組網址。"); return; }
+  const base = (SHARE_BASE || (location.origin + location.pathname)).split("#")[0];
+  copyText(base + "#" + roomId + "." + adminKey);
+};
+$("adminClear").onclick = async () => {
+  if (!confirm("確定要清空這個聊天室的所有訊息與上傳的檔案嗎？\n這個動作無法復原。")) return;
+  if (!confirm("再確認一次：真的要全部清空？")) return;
+  const msg = $("adminMsg");
+  msg.textContent = "清空中…";
+  const { error } = await db.rpc("admin_clear_room", { p_room: roomId });
+  if (error) { msg.textContent = "清空失敗：" + error.message; return; }
+  try {
+    const paths = [];
+    let off = 0;
+    while (true) {
+      const { data } = await db.storage.from(BUCKET).list(roomId, { limit: 100, offset: off });
+      if (!data || !data.length) break;
+      data.forEach(f => { if (f.id) paths.push(roomId + "/" + f.name); });
+      if (data.length < 100) break;
+      off += 100;
+    }
+    for (let i = 0; i < paths.length; i += 100) await db.storage.from(BUCKET).remove(paths.slice(i, i + 100));
+  } catch (e) { /* 檔案可到 Supabase 後台 Storage 手動刪除 */ }
+  if (channel) channel.send({ type: "broadcast", event: "cleared", payload: {} });
+  resetList();
+  await loadHistory();
+  msg.textContent = "";
+  closeModals();
+  alert("已清空。");
+};
+
+/* ---------- 複製邀請網址 / 匯出 ---------- */
+$("copyBtn").onclick = () => {
+  const base = (SHARE_BASE || (location.origin + location.pathname)).split("#")[0];
+  copyText(base + "#" + roomId);
+};
 $("exportBtn").onclick = async () => {
   setStatus("整理中…");
   let all = [], from = 0;
   while (true) {
-    const { data, error } = await db.from("messages").select("*")
-      .eq("room", room).order("id", { ascending: true }).range(from, from + 999);
+    const { data, error } = await db.from("messages").select("*").eq("room", roomId).order("id", { ascending: true }).range(from, from + 999);
     if (error) { setStatus("匯出失敗：" + error.message); return; }
     all = all.concat(data);
     if (data.length < 1000) break;
@@ -544,7 +1161,8 @@ $("exportBtn").onclick = async () => {
     const t = new Date(m.created_at).toLocaleString("zh-TW", { hour12: false });
     if (m.kind === "system") return "[" + t + "] ※ " + m.content;
     let s = "[" + t + "] " + m.name + "：";
-    if (m.reply_to && byId.get(m.reply_to)) s += "(回覆 " + byId.get(m.reply_to).name + "：" + snippet(byId.get(m.reply_to)) + ") ";
+    const o = m.reply_to && byId.get(m.reply_to);
+    if (o) s += "(回覆 " + o.name + "：" + snippet(o) + ") ";
     s += (m.content || "");
     if (m.file_url) s += " (檔案：" + (m.file_name || "") + " " + m.file_url + ")";
     return s;
