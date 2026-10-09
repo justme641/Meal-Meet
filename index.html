@@ -2,27 +2,38 @@
 <!--
   ============================================================
   朋友聊天室  index.html
-  目前版本：V1.2　　本版建立日期：2026-10-09
-  搭配資料庫指令：update_v3.sql（請先執行過才能使用）
+  目前版本：V1.3　　本版建立日期：2026-10-09
+  搭配檔案：config.js（填 Supabase 網址與金鑰）、update_v1.3.sql（資料庫升級指令，須先執行）
 
-  【修改紀錄】
-  V1.0（2026-10-09）初版：輸入名稱即可聊天、傳圖片/檔案/影音、匯出對話、即時訊息
-  V1.1（2026-10-09）新增：房間表與期限、倒數、改名通知、回覆、輸入中提示、上線人數、
-                       背景通知（標題閃動/桌面通知）、深色模式、表情符號、複製邀請網址
-  V1.2（2026-10-09）本次修改：
-    1. 期限改為手動輸入「天＋小時」（預設 0 天 1 小時），另有「不限時」
-    2. 房名、期限、注意事項、公告、通關密碼：只有房主（持有房主專用網址）能修改
-    3. 進入需輸入 4 碼通關密碼（格框輸入＋提示文字）；連錯 10 次鎖定 10 分鐘
-    4. 進入時可上傳自己的頭像照片，或選預設圖示（之後可在 👤 修改）
-    5. 進入房間、改名時，聊天室會顯示當下時間與狀態
-    6. 倒數：1 小時以上顯示「天:小時」，不到 1 小時改為「分:秒」逐秒倒數
-    7. 上方新增 📢「注意事項／公告」（兩個分頁，只有房主可編輯）
-    8. 上傳檔案移到上方 📎，點開分為 照片／影片／檔案
-    9. 原 ＋ 位置改為「常用回覆」（含邀約常用短句，點一下直接送出）
-   10. 指定回覆強化：每則訊息有 ↩、雙擊訊息也可回覆，引用區塊可點擊跳到原訊息
-   11. 新增 @標註：可選已加入過的成員或 @全部人，被標註的人訊息會醒目提示
-   12. 房主可「清空聊天記錄」（連同上傳的檔案）、複製房主專用網址
-   13. 資料存取改為「必須是成員」（匿名登入＋通關密碼驗證），安全性比 V2 更高
+  【版次說明】
+  V1　　（2026-10-09）初版：輸入名稱即可聊天、傳圖片/檔案/影音、匯出對話、即時訊息
+  V1.1　（2026-10-09）原稱 V2：房間期限與倒數、改名通知、回覆、輸入中提示、上線人數、
+                       背景通知、深色模式、表情符號、複製邀請網址
+  V1.2　（2026-10-09）原稱 V3：天＋小時期限、房主專屬設定、4 碼通關密碼、頭像、
+                       📢 注意事項/公告、📎 上傳選單、常用回覆、指定回覆、@標註、
+                       清空聊天記錄、匿名登入＋成員制存取
+  V1.3　（2026-10-09）本次修改：
+     1. 通關密碼：連續錯 5 次鎖定 10 分鐘；每次輸錯會顯示「已錯誤 N 次／尚可容錯 N 次／5 次後的結果」；
+        提示語改為「請輸入指定會面日期（月＋日，共 4 碼）；未確定日期請輸入今天日期」
+     2. 常用回覆：「AA 制可以嗎？」改為「多少錢?」
+     3. 版次改以 V1.1、V1.2、V1.3… 編號（同一天多次修改就遞增）
+     4. 移除輸入框旁的 @ 按鈕；在訊息框輸入 @ 仍會跳出標註清單
+     5. 移除每則訊息的 ↩ 圖示：點一下訊息框即可回覆；引用區塊點一下仍會跳到原訊息
+     6. 單檔 10MB 上限寫入注意事項（SQL 內處理）與上傳選單提示
+     7. 相簿：一次選多張照片（最多 30 張）成為一本相簿，聊天室只顯示一個縮圖拼貼；
+        點開可瀏覽、單張下載、全部下載、ZIP 打包下載；大於 1.5MB 的照片會自動縮到最長邊 2560px
+     8. 訊息泡泡寬度改為依內容長度（修正常用回覆後方多出空白）
+     9. 新增 🔍 搜尋：搜尋文字、或只看某位成員的發言
+    10. 上方第一層只留 📢 公告、🔍 搜尋、📎 上傳、⋯ 更多；其餘功能收進「更多」並加上文字說明；
+        「複製邀請連結」點擊後會顯示用途說明
+    11. 未讀標記：長按（電腦：按右鍵）訊息 →「從這則開始標記為未讀」；
+        第一次進入停在最新訊息，之後進入會停在上次讀到的位置（或標記處）；新訊息出現時顯示「⬇ 最新訊息」按鈕
+    12. 名稱副標（狀態列）：預設空白，可自行修改，顯示在發言者名稱旁
+    13. 預設頭像改為 12 款原創卡通人物（非動物），也可上傳自己的圖片
+    14. 建立房間完成後，朋友邀請網址、通關密碼、房主專用網址整理成一段文字，只要複製一次
+    15. 「⋯ 更多」新增「🔑 我是房主」：在其他裝置貼上房主專用網址即可取得房主權限；房主設定內有清空功能
+    16. 匯出：可匯出「含圖片的網頁檔 .html」（雙擊即可用瀏覽器觀看），或純文字 .txt
+    17. 設定（Supabase 網址、金鑰、邀請網址）改放 config.js
   ============================================================
 -->
 <html lang="zh-Hant">
@@ -34,10 +45,12 @@
 <style>
   :root { --bg:#f2f4f7; --panel:#fff; --list:#f7f8fa; --text:#222; --muted:#7a8394; --line:#e2e6ed;
           --bubble:#fff; --me:#dce8ff; --meline:#c4d7fb; --accent:#2f6fed; --ghost:#e4e8ef; --ghosttext:#333;
-          --input:#fff; --inputline:#c8cfda; --quote:#eef1f6; --warn:#c0392b; --at:#fff3cd; --atline:#f0c36d; }
+          --input:#fff; --inputline:#c8cfda; --quote:#eef1f6; --warn:#c0392b; --at:#fff3cd; --atline:#f0c36d;
+          --mark:#fde8c8; --markline:#f0b36a; --new:#dff3e4; --newline:#7fc79a; }
   [data-theme="dark"] { --bg:#12151a; --panel:#1b1f27; --list:#161a21; --text:#e6e9ef; --muted:#8d97a8; --line:#2a303b;
           --bubble:#242a35; --me:#243a63; --meline:#2f4c82; --accent:#4c86ff; --ghost:#2a303b; --ghosttext:#dfe3ea;
-          --input:#12151a; --inputline:#3a4252; --quote:#1d222b; --warn:#ff7b6b; --at:#4a3d14; --atline:#8a6d1f; }
+          --input:#12151a; --inputline:#3a4252; --quote:#1d222b; --warn:#ff7b6b; --at:#4a3d14; --atline:#8a6d1f;
+          --mark:#4a3820; --markline:#9a7132; --new:#1f3a2a; --newline:#3f8f60; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body { font-family: -apple-system, "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); }
@@ -47,53 +60,84 @@
   button.ghost { background: var(--ghost); color: var(--ghosttext); }
   button.danger { background: var(--warn); color: #fff; }
   button:disabled { opacity: .5; cursor: default; }
-  input[type=text], input[type=number], select, textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--inputline); border-radius: 8px; width: 100%; max-width: 340px; background: var(--input); color: var(--text); }
+  input[type=text], input[type=number], input[type=tel], select, textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--inputline); border-radius: 8px; width: 100%; max-width: 340px; background: var(--input); color: var(--text); }
   textarea { max-width: none; min-height: 120px; resize: vertical; }
   input[type=number] { width: 90px; text-align: center; }
   form.col, .col0 { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .field { width: 100%; max-width: 340px; text-align: left; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
   .row { display: flex; align-items: center; gap: 8px; }
-  .hint { font-size: 12px; color: var(--muted); }
-  .err { font-size: 13px; color: var(--warn); min-height: 18px; }
+  .hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .err { font-size: 13px; color: var(--warn); min-height: 18px; line-height: 1.5; max-width: 340px; }
   .pinrow { display: flex; gap: 10px; justify-content: center; }
   .pinbox { width: 52px !important; height: 60px; padding: 0 !important; text-align: center; font-size: 26px !important; border: 2px solid var(--inputline); border-radius: 12px; background: var(--input); color: var(--text); }
   .pinbox:focus { outline: none; border-color: var(--accent); }
-  .box { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
-  .box input { max-width: none; font-size: 13px; }
+  .box { width: 100%; max-width: 440px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .box textarea { min-height: 230px; font-size: 13px; line-height: 1.55; }
   .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--ghost); display: flex; align-items: center; justify-content: center; font-size: 20px; flex: none; overflow: hidden; }
   .avatar.big { width: 72px; height: 72px; font-size: 38px; }
-  .avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .avgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-width: 300px; }
-  .avgrid button { background: var(--ghost); padding: 4px; font-size: 22px; }
-  .avgrid button.on { outline: 2px solid var(--accent); }
+  .avatar img, .avatar svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .avgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-width: 320px; }
+  .avgrid button { background: transparent; padding: 2px; border-radius: 50%; width: 100%; aspect-ratio: 1; overflow: hidden; border: 2px solid transparent; }
+  .avgrid button svg { width: 100%; height: 100%; display: block; border-radius: 50%; }
+  .avgrid button.on { border-color: var(--accent); }
+
   #chat { height: 100%; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; background: var(--panel); position: relative; }
   header { padding: 8px 12px; border-bottom: 1px solid var(--line); }
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .title { font-weight: 600; font-size: 17px; }
-  .tools { display: flex; gap: 5px; flex-wrap: wrap; }
-  .tools button { padding: 5px 8px; font-size: 15px; position: relative; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .title { font-weight: 600; font-size: 17px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tools { display: flex; gap: 5px; flex: none; }
+  .tools button { padding: 6px 9px; font-size: 15px; position: relative; white-space: nowrap; }
+  .tools .lbl { font-size: 13px; margin-left: 3px; }
+  @media (max-width: 480px) { .tools .lbl { display: none; } }
   .dot { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; }
-  .sub { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 4px; }
-  #countdown { font-variant-numeric: tabular-nums; }
-  #list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--list); }
+  .sub { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 4px; min-width: 0; }
+  #countdown { font-variant-numeric: tabular-nums; white-space: nowrap; flex: none; }
+  #online { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .dropdown { position: absolute; top: 50px; right: 8px; width: 270px; max-width: calc(100% - 16px); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 6px 24px rgba(0,0,0,.2); z-index: 8; }
+  .dropdown button { background: none; color: var(--text); text-align: left; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+  .dropdown button small { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .dropdown button:hover { background: var(--ghost); }
+  .dropdown .ver { padding: 6px 12px 4px; font-size: 11px; color: var(--muted); }
+  #attachMenu { right: 56px; width: 220px; }
+
+  #listWrap { flex: 1; position: relative; min-height: 0; }
+  #list { position: absolute; inset: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--list); }
+  #jump { position: absolute; right: 12px; bottom: 10px; z-index: 3; border-radius: 999px; padding: 8px 14px; font-size: 14px; box-shadow: 0 3px 12px rgba(0,0,0,.25); }
   .msg { display: flex; gap: 8px; max-width: 88%; align-self: flex-start; }
   .msg.me { flex-direction: row-reverse; align-self: flex-end; }
-  .msg .col { min-width: 0; }
-  .meta { font-size: 12px; color: var(--muted); margin: 0 4px 2px; display: flex; gap: 8px; align-items: center; }
+  .msg .col { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .msg.me .col { align-items: flex-end; }
+  .meta { font-size: 12px; color: var(--muted); margin: 0 4px 2px; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
   .me .meta { justify-content: flex-end; }
-  .rbtn { background: none; color: var(--muted); padding: 0 6px; font-size: 15px; border-radius: 4px; }
-  .rbtn:hover { background: var(--ghost); }
-  .bubble { background: var(--bubble); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; white-space: pre-wrap; word-break: break-word; }
+  .meta .nm { font-weight: 600; color: var(--text); opacity: .8; }
+  .meta .subt { font-style: italic; }
+  .bubble { background: var(--bubble); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; white-space: pre-wrap; word-break: break-word; max-width: 100%; cursor: pointer; }
   .me .bubble { background: var(--me); border-color: var(--meline); }
   .bubble.mentioned { background: var(--at); border-color: var(--atline); }
-  .bubble img, .bubble video { max-width: 100%; max-height: 320px; border-radius: 8px; display: block; }
+  @media (hover: none) { .bubble { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } }
+  .media { margin-top: 6px; }
+  .media:first-child { margin-top: 0; }
+  .media img.single, .media video { max-width: 100%; max-height: 320px; border-radius: 8px; display: block; cursor: zoom-in; }
+  .media video { cursor: auto; }
   .bubble a { color: var(--accent); }
   .at { color: var(--accent); font-weight: 600; }
   .quote { font-size: 12px; color: var(--muted); background: var(--quote); border-left: 3px solid var(--accent); border-radius: 6px; padding: 4px 8px; margin-bottom: 6px; cursor: pointer; white-space: normal; }
   .sys { align-self: center; font-size: 12px; color: var(--muted); background: var(--quote); border-radius: 999px; padding: 3px 12px; text-align: center; }
+  .divider { align-self: stretch; text-align: center; font-size: 12px; border-radius: 8px; padding: 4px 10px; }
+  .divider.mark { background: var(--mark); border: 1px solid var(--markline); cursor: pointer; }
+  .divider.new { background: var(--new); border: 1px solid var(--newline); }
   .flash .bubble { outline: 2px solid var(--accent); }
+  .album { width: 236px; max-width: 100%; }
+  .albumgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; border-radius: 10px; overflow: hidden; cursor: pointer; }
+  .albumgrid .cell { position: relative; aspect-ratio: 1; background: var(--quote); overflow: hidden; }
+  .albumgrid .cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .albumgrid.n1 .cell, .albumgrid.n3 .cell:first-child { grid-column: span 2; aspect-ratio: 2/1; }
+  .albumgrid .more { position: absolute; inset: 0; background: rgba(0,0,0,.5); color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; }
+  .albumcap { font-size: 12px; color: var(--muted); margin-top: 4px; }
   #typing { font-size: 12px; color: var(--muted); padding: 2px 14px; min-height: 20px; }
-  #status { font-size: 12px; color: var(--warn); padding: 0 14px 4px; min-height: 16px; }
+  #status { font-size: 12px; color: var(--warn); padding: 0 14px 4px; }
+  #status:empty { display: none; }
   #replyBar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px; background: var(--quote); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
   #replyBar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #replyBar button { padding: 2px 8px; }
@@ -109,19 +153,34 @@
   #atBox { width: 240px; max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
   #atBox button { background: none; color: var(--text); text-align: left; padding: 6px 8px; }
   #atBox button:hover { background: var(--ghost); }
-  #attachMenu { position: absolute; top: 56px; right: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 6; }
-  #attachMenu button { background: none; color: var(--text); text-align: left; padding: 8px 14px; }
-  #attachMenu button:hover { background: var(--ghost); }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 12px; }
   .sheet { background: var(--panel); border-radius: 14px; padding: 16px; width: 100%; max-width: 460px; max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
-  .sheet h3 { margin: 0; display: flex; justify-content: space-between; align-items: center; }
+  .sheet h3 { margin: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .sheet h3 span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sheet .field { max-width: none; }
-  .sheet input[type=text] { max-width: none; }
+  .sheet input[type=text], .sheet select { max-width: none; }
   .tabs { display: flex; gap: 6px; }
   .tabs button { flex: 1; }
   .tabs button.off { background: var(--ghost); color: var(--ghosttext); }
   .view { white-space: pre-wrap; word-break: break-word; background: var(--quote); border-radius: 8px; padding: 10px; min-height: 80px; font-size: 14px; }
-  .ver { font-size: 11px; color: var(--muted); text-align: center; }
+  .thumbgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .thumbgrid .t { position: relative; aspect-ratio: 1; background: var(--quote); border-radius: 6px; overflow: hidden; cursor: pointer; }
+  .thumbgrid .t img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btnrow button { flex: 1; min-width: 120px; }
+  .results { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; }
+  .results .item { text-align: left; background: var(--quote); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+  .results .item .who { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .results mark { background: var(--at); color: inherit; border-radius: 3px; }
+  .menuact { display: flex; flex-direction: column; gap: 6px; }
+  .menuact button { text-align: left; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 40; display: flex; align-items: center; justify-content: center; }
+  .lightbox img { max-width: 96vw; max-height: 82vh; object-fit: contain; }
+  .lightbox .lbbar { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; color: #fff; font-size: 14px; gap: 8px; }
+  .lightbox .lbbar button, .lightbox .lbnav { background: rgba(255,255,255,.16); color: #fff; }
+  .lightbox .lbnav { position: absolute; top: 50%; transform: translateY(-50%); padding: 12px 14px; font-size: 20px; }
+  #lbPrev { left: 8px; } #lbNext { right: 8px; }
+  #toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: rgba(30,34,42,.95); color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 60; max-width: 90vw; text-align: center; line-height: 1.5; box-shadow: 0 6px 24px rgba(0,0,0,.3); }
 </style>
 </head>
 <body>
@@ -138,8 +197,8 @@
         <input type="number" id="roomH" min="0" max="999" value="1"> 小時</div>
       <label class="row"><input type="checkbox" id="roomUnlimited"> 不限時</label>
     </div>
-    <div class="field">🔒 通關密碼（4 位數）
-      <div class="hint">朋友進入聊天室時必須輸入。建議用 LINE 私訊另外告訴朋友，不要和網址放在一起。</div>
+    <div class="field" style="align-items:center;text-align:center">🔒 通關密碼（4 碼）
+      <div class="hint">建議設為「指定會面日期」，月＋日共 4 碼（例如 10 月 25 日 → 1025）。如果尚未確定日期，請設為今天日期（傳出連結的日期）。朋友進入時必須輸入；建議用 LINE 私訊另外告訴朋友，不要和網址放在一起。</div>
       <div id="createPin"></div>
     </div>
     <div id="createMsg" class="err"></div>
@@ -151,15 +210,10 @@
 <div id="created" class="center hidden">
   <h2>✅ 聊天室已建立</h2>
   <div class="box">
-    <b>① 朋友邀請網址（貼到 LINE）</b>
-    <input type="text" id="cFriend" readonly>
-    <button class="ghost" type="button" data-copy="cFriend">複製</button>
-    <b>② 通關密碼（另外私訊朋友）</b>
-    <input type="text" id="cPin" readonly>
-    <b>③ 房主專用網址（只有你能用，請自己保存！）</b>
-    <div class="hint">它是管理聊天室的鑰匙。換手機、清除瀏覽器資料後，要靠它才能重新取得房主權限。不要傳給別人。</div>
-    <input type="text" id="cAdmin" readonly>
-    <button class="ghost" type="button" data-copy="cAdmin">複製</button>
+    <b>請按一次「複製全部」，貼到備忘錄或 LINE 的「我的筆記」保存</b>
+    <div class="hint">裡面已標明哪一個是「朋友邀請網址」、哪一個是「房主專用網址」。房主專用網址是你的管理鑰匙：換手機、清除瀏覽器資料後要靠它重新取得房主權限，請勿給別人。</div>
+    <textarea id="cBlock" readonly></textarea>
+    <button type="button" id="cCopy">📋 複製全部</button>
   </div>
   <button id="cEnter">我已保存，進入聊天室</button>
 </div>
@@ -172,7 +226,7 @@
     <input type="text" id="joinName" maxlength="20" placeholder="輸入想顯示的名稱" autocomplete="off">
     <div id="joinPinWrap" class="field" style="align-items:center;text-align:center">
       🔒 請輸入通關密碼
-      <div class="hint">本次約定會面日期為 4 位數通關密碼，若尚未確定日期，請輸入今天日期</div>
+      <div class="hint">請輸入指定會面日期，共 4 碼（月＋日，例如 10 月 25 日請輸入 1025）。<br>如未確定日期，請輸入今天日期（收到此連結的當天日期）。</div>
       <div id="joinPin"></div>
     </div>
     <div id="joinMsg" class="err"></div>
@@ -182,7 +236,7 @@
 
 <!-- 畫面：結束 / 錯誤 -->
 <div id="ended" class="center hidden">
-  <h2 id="endedText">這個聊天室已結束</h2>
+  <h2 id="endedText" style="line-height:1.5">這個聊天室已結束</h2>
 </div>
 
 <!-- 畫面：聊天室 -->
@@ -191,14 +245,10 @@
     <div class="top">
       <div class="title" id="roomName"></div>
       <div class="tools">
-        <button class="ghost" id="noticeBtn" title="注意事項／公告">📢<span id="noticeDot" class="dot hidden"></span></button>
-        <button class="ghost" id="attachBtn" title="上傳照片／影片／檔案">📎</button>
-        <button class="ghost" id="copyBtn" title="複製邀請網址">📋</button>
-        <button class="ghost" id="exportBtn" title="匯出對話">💾</button>
-        <button class="ghost" id="profileBtn" title="我的名稱與頭像">👤</button>
-        <button class="ghost" id="bellBtn" title="開啟通知">🔔</button>
-        <button class="ghost" id="themeBtn" title="深色／淺色">🌙</button>
-        <button class="ghost hidden" id="adminBtn" title="房主設定">⚙️</button>
+        <button class="ghost" id="noticeBtn" title="注意事項／公告" aria-label="注意事項／公告">📢<span class="lbl">公告</span><span id="noticeDot" class="dot hidden"></span></button>
+        <button class="ghost" id="searchBtn" title="搜尋" aria-label="搜尋">🔍<span class="lbl">搜尋</span></button>
+        <button class="ghost" id="attachBtn" title="上傳照片／影片／檔案" aria-label="上傳">📎<span class="lbl">上傳</span></button>
+        <button class="ghost" id="moreBtn" title="更多" aria-label="更多">⋯<span class="lbl">更多</span></button>
       </div>
     </div>
     <div class="sub">
@@ -206,15 +256,32 @@
       <span id="online"></span>
     </div>
   </header>
-  <div id="attachMenu" class="hidden">
-    <button type="button" id="pickPhoto">🖼 照片</button>
+
+  <div id="attachMenu" class="dropdown hidden">
+    <button type="button" id="pickPhoto">🖼 照片<small>可一次選多張，會整理成一本相簿</small></button>
     <button type="button" id="pickVideo">🎬 影片</button>
     <button type="button" id="pickFile">📄 檔案</button>
+    <div class="ver">單檔上限 10MB</div>
   </div>
-  <input type="file" id="photoInput" accept="image/*" class="hidden">
+  <div id="moreMenu" class="dropdown hidden">
+    <button type="button" data-act="copy">🔗 複製邀請連結<small>貼到 LINE 給朋友（不含通關密碼）</small></button>
+    <button type="button" data-act="export">💾 匯出對話<small>含圖片的網頁檔，或純文字</small></button>
+    <button type="button" data-act="profile">👤 我的名稱・頭像・副標</button>
+    <button type="button" data-act="bell">🔔 開啟新訊息通知</button>
+    <button type="button" data-act="theme" id="themeItem">🌙 深色模式</button>
+    <button type="button" data-act="mark" id="markItem" class="hidden">🔖 跳到未讀標記</button>
+    <button type="button" data-act="admin" id="adminItem" class="hidden">⚙️ 房主設定<small>房名、期限、密碼、清空聊天記錄</small></button>
+    <button type="button" data-act="getadmin" id="getAdminItem">🔑 我是房主<small>貼上房主專用網址，取得房主權限</small></button>
+    <div class="ver" id="verText"></div>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
   <input type="file" id="videoInput" accept="video/*" class="hidden">
   <input type="file" id="anyFileInput" class="hidden">
-  <div id="list"></div>
+
+  <div id="listWrap">
+    <div id="list"></div>
+    <button id="jump" class="hidden" type="button">⬇ 最新訊息</button>
+  </div>
   <div id="typing"></div>
   <div id="status"></div>
   <div id="replyBar" class="hidden"><span id="replyText"></span><button class="ghost" id="replyCancel" type="button">✕</button></div>
@@ -224,8 +291,7 @@
   <form id="sendForm">
     <button type="button" class="ghost" id="quickBtn" title="常用回覆">💬</button>
     <button type="button" class="ghost" id="emojiBtn" title="表情符號">😊</button>
-    <button type="button" class="ghost" id="atBtn" title="標註成員">@</button>
-    <input type="text" id="msgInput" placeholder="輸入訊息…" autocomplete="off" maxlength="2000">
+    <input type="text" id="msgInput" placeholder="輸入訊息，@ 可標註" autocomplete="off" maxlength="2000">
     <button type="submit">送出</button>
   </form>
 </div>
@@ -233,7 +299,7 @@
 <!-- 視窗：注意事項／公告 -->
 <div id="noticeModal" class="modal hidden">
   <div class="sheet">
-    <h3>📢 聊天室資訊 <button class="ghost" data-close>✕</button></h3>
+    <h3><span>📢 聊天室資訊</span> <button class="ghost" data-close>✕</button></h3>
     <div class="tabs"><button id="tabNotice">注意事項</button><button id="tabAnn" class="off">公告</button></div>
     <div id="paneNotice">
       <div id="noticeView" class="view"></div>
@@ -250,16 +316,19 @@
       </div>
     </div>
     <div id="noticeMsg" class="err"></div>
-    <div class="ver" id="verText"></div>
   </div>
 </div>
 
 <!-- 視窗：我的資料 -->
 <div id="profileModal" class="modal hidden">
   <div class="sheet">
-    <h3>👤 我的名稱與頭像 <button class="ghost" data-close>✕</button></h3>
+    <h3><span>👤 我的名稱・頭像・副標</span> <button class="ghost" data-close>✕</button></h3>
     <div id="profileAvatar" class="col0"></div>
     <div class="field">名稱<input type="text" id="profileName" maxlength="20" autocomplete="off"></div>
+    <div class="field">副標（狀態列，可留空）
+      <input type="text" id="profileSub" maxlength="20" placeholder="例如：吃飯中、晚點回" autocomplete="off">
+      <div class="hint">會顯示在你的名稱旁邊，隨時可以修改。</div>
+    </div>
     <div id="profileMsg" class="err"></div>
     <button id="profileSave">儲存</button>
   </div>
@@ -268,7 +337,7 @@
 <!-- 視窗：房主設定 -->
 <div id="adminModal" class="modal hidden">
   <div class="sheet">
-    <h3>⚙️ 房主設定 <button class="ghost" data-close>✕</button></h3>
+    <h3><span>⚙️ 房主設定</span> <button class="ghost" data-close>✕</button></h3>
     <div class="field">聊天室名稱<input type="text" id="adminTitle" maxlength="30"></div>
     <div class="field">變更開放期限（從現在起重新計算，不改請留空）
       <div class="row"><input type="number" id="adminD" min="0" max="365" placeholder="天"> 天
@@ -286,18 +355,99 @@
   </div>
 </div>
 
+<!-- 視窗：搜尋 -->
+<div id="searchModal" class="modal hidden">
+  <div class="sheet">
+    <h3><span>🔍 搜尋</span> <button class="ghost" data-close>✕</button></h3>
+    <input type="text" id="searchQ" placeholder="輸入要找的文字" autocomplete="off">
+    <div class="field">只看某位成員的發言<select id="searchWho"></select></div>
+    <div id="searchInfo" class="hint"></div>
+    <div id="searchRes" class="results"></div>
+  </div>
+</div>
+
+<!-- 視窗：訊息選單（長按／按右鍵） -->
+<div id="msgMenuModal" class="modal hidden">
+  <div class="sheet">
+    <h3><span id="msgMenuTitle">訊息</span> <button class="ghost" data-close>✕</button></h3>
+    <div class="menuact">
+      <button id="mmReply" class="ghost">↩ 回覆這則訊息</button>
+      <button id="mmMark" class="ghost">🔖 從這則開始標記為未讀</button>
+      <button id="mmCopy" class="ghost">📋 複製文字</button>
+    </div>
+  </div>
+</div>
+
+<!-- 視窗：相簿上傳 -->
+<div id="albumUpModal" class="modal hidden">
+  <div class="sheet">
+    <h3><span id="albumUpTitle">上傳相簿</span> <button class="ghost" data-close id="albumUpClose">✕</button></h3>
+    <input type="text" id="albumName" maxlength="40" placeholder="相簿名稱（選填，例如：週末爬山）" autocomplete="off">
+    <div id="albumUpGrid" class="thumbgrid"></div>
+    <div id="albumUpInfo" class="hint"></div>
+    <button id="albumUpStart">開始上傳</button>
+  </div>
+</div>
+
+<!-- 視窗：相簿瀏覽 -->
+<div id="albumModal" class="modal hidden">
+  <div class="sheet">
+    <h3><span id="albumTitle">相簿</span> <button class="ghost" data-close>✕</button></h3>
+    <div id="albumGrid" class="thumbgrid"></div>
+    <div class="btnrow">
+      <button id="albumDlAll" class="ghost">⬇ 全部下載</button>
+      <button id="albumDlZip" class="ghost">📦 打包 ZIP 下載</button>
+    </div>
+    <div id="albumInfo" class="hint">點縮圖可放大、瀏覽與單張下載。</div>
+  </div>
+</div>
+
+<!-- 視窗：匯出 -->
+<div id="exportModal" class="modal hidden">
+  <div class="sheet">
+    <h3><span>💾 匯出對話</span> <button class="ghost" data-close>✕</button></h3>
+    <label class="row"><input type="radio" name="exp" value="html" checked> <span><b>網頁檔（.html，含圖片）</b><br><span class="hint">文字與照片一起存進同一個檔案，雙擊就能用瀏覽器開啟觀看，不需要解壓縮。</span></span></label>
+    <label class="row"><input type="radio" name="exp" value="txt"> <span><b>純文字（.txt）</b><br><span class="hint">只有文字，檔案很小。</span></span></label>
+    <label class="row" id="expFilesWrap"><input type="checkbox" id="expFiles"> <span>同時內嵌影片與其他檔案<br><span class="hint">檔案可能很大，手機容易卡住；不勾選時會保留連結。</span></span></label>
+    <div class="hint">網頁檔中的照片會縮成最長邊 1280px 以控制檔案大小；要原圖請從相簿下載。</div>
+    <div id="expMsg" class="err" style="color:var(--muted)"></div>
+    <button id="expStart">開始匯出</button>
+  </div>
+</div>
+
+<!-- 圖片放大檢視 -->
+<div id="lightbox" class="lightbox hidden">
+  <div class="lbbar"><span id="lbCount"></span><span><button id="lbDl">⬇ 下載</button> <button id="lbClose">✕</button></span></div>
+  <button class="lbnav" id="lbPrev">‹</button>
+  <img id="lbImg" alt="">
+  <button class="lbnav" id="lbNext">›</button>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ============ 只需要改這三行 ============ */
-const SUPABASE_URL = "https://sumbrbigoixdyaqqayll.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DTg89c32RlO8q1V0ukmJog__dGzTQrV";
-const SHARE_BASE = "";   // 選填：正式上線搬到新網址後填這裡（例如 "https://my-chat.pages.dev/"）
-/* ======================================== */
+/* ============================================================
+   設定來自 config.js（Supabase 網址、金鑰、邀請網址）。
+   下面這些是程式內建的固定值，一般不需要改。
+   ============================================================ */
+const CFG = window.CHAT_CONFIG || {};
+const SUPABASE_URL = String(CFG.SUPABASE_URL || "").replace(/\/+$/, "");
+const SUPABASE_KEY = String(CFG.SUPABASE_KEY || "");
+const SHARE_BASE = String(CFG.SHARE_BASE || "");
 
-const APP_VERSION = "V3";
+const APP_VERSION = "V1.3";
 const APP_DATE = "2026-10-09";
-const MAX_MB = 10;
-const BUCKET = "chat-files";
+const MAX_MB = 10;               // 單檔上限（資料庫端的 Storage 也限制 10MB）
+const MAX_ALBUM = 30;            // 一本相簿最多張數
+const BUCKET = "chat-files";     // Supabase Storage 的資料夾（bucket）名稱
+const COMPRESS_OVER = 1.5 * 1024 * 1024;  // 照片超過這個大小才會自動縮小
+const COMPRESS_MAX_PX = 2560;    // 縮小後最長邊
+const THUMB_PX = 480;            // 相簿縮圖最長邊
+const EXPORT_IMG_PX = 1280;      // 匯出網頁檔時，照片最長邊
+const PIN_TRIES = 5;             // 通關密碼可容錯次數（需與 update_v1.3.sql 一致）
+
 const $ = id => document.getElementById(id);
 
 /* ---------- 小工具 ---------- */
@@ -311,21 +461,48 @@ function pad2(n) { return String(n).padStart(2, "0"); }
 function fmtTime(s) {
   return new Date(s).toLocaleString("zh-TW", { hour12: false, month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
-function snippet(m) { return (m.content || (m.file_name ? "[檔案] " + m.file_name : "")).slice(0, 40); }
+function localDate() { const d = new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+function fmtFull(s) { return new Date(s).toLocaleString("zh-TW", { hour12: false }); }
+function snippet(m) {
+  if (m.content) return m.content.slice(0, 40);
+  if (Array.isArray(m.files) && m.files.length) return "[相簿 " + m.files.length + " 張照片]";
+  if (m.file_name) return "[檔案] " + m.file_name;
+  return "";
+}
 function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-async function copyText(t) {
-  try { await navigator.clipboard.writeText(t); alert("已複製"); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+let toastTimer = null;
+function toast(t, ms) {
+  const el = $("toast");
+  el.textContent = t;
+  el.classList.remove("hidden");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add("hidden"), ms || 2600);
+}
+async function copyText(t, okMsg) {
+  try { await navigator.clipboard.writeText(t); toast(okMsg || "已複製", 4200); }
   catch (e) { prompt("請手動複製：", t); }
+}
+function baseUrl() { return (SHARE_BASE || (location.origin + location.pathname)).split("#")[0]; }
+function safeFileUrl(u) {
+  return typeof u === "string" && SUPABASE_URL && u.startsWith(SUPABASE_URL + "/storage/v1/object/public/" + BUCKET + "/");
+}
+function saveBlob(b, name) {
+  const a = document.createElement("a");
+  const u = URL.createObjectURL(b);
+  a.href = u; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 5000);
 }
 
 /* ---------- 全域狀態 ---------- */
 let db, uid = "", roomId = "", adminKey = "";
 let roomInfo = null, isAdmin = false;
-let me = { name: "", avatar: "" };
+let me = { name: "", avatar: "", subtitle: "" };
 let channel = null, pollTimer = null, tickTimer = null, refreshTimer = null;
 let baseTitle = "聊天室";
-let lastId = 0, replyTo = null;
+let lastId = 0, replyTo = null, placed = false, newCount = 0;
 const seen = new Set();
 const msgMap = new Map();
 const members = new Map();
@@ -342,22 +519,33 @@ function openModal(id) { $(id).classList.remove("hidden"); }
 function closeModals() { document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden")); }
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = closeModals);
 document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) closeModals(); }));
-document.querySelectorAll("[data-copy]").forEach(b => b.onclick = () => copyText($(b.dataset.copy).value));
-function closePopups() { ["emojiBox", "quickBox", "atBox", "attachMenu"].forEach(id => $(id).classList.add("hidden")); }
+const POPUPS = ["emojiBox", "quickBox", "atBox", "attachMenu", "moreMenu"];
+function closePopups() { POPUPS.forEach(id => $(id).classList.add("hidden")); }
 document.addEventListener("click", e => {
-  const keep = ["emojiBox", "quickBox", "atBox", "attachMenu", "emojiBtn", "quickBtn", "atBtn", "attachBtn"];
+  const keep = POPUPS.concat(["emojiBtn", "quickBtn", "attachBtn", "moreBtn"]);
   if (!keep.some(id => $(id).contains(e.target))) closePopups();
 });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeLightbox(); closeModals(); closePopups(); }
+  if (!$("lightbox").classList.contains("hidden")) {
+    if (e.key === "ArrowLeft") lbStep(-1);
+    if (e.key === "ArrowRight") lbStep(1);
+  }
+});
+function togglePopup(id) {
+  const wasHidden = $(id).classList.contains("hidden");
+  closePopups();
+  if (wasHidden) $(id).classList.remove("hidden");
+}
 
 /* ---------- 深色模式 ---------- */
 let theme = lsGet("chat_theme");
 if (!theme) { try { theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } catch (e) { theme = "light"; } }
 function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
-  $("themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
+  $("themeItem").textContent = t === "dark" ? "☀️ 淺色模式" : "🌙 深色模式";
 }
 applyTheme(theme);
-$("themeBtn").onclick = () => { theme = theme === "dark" ? "light" : "dark"; applyTheme(theme); lsSet("chat_theme", theme); };
 
 /* ---------- 4 碼輸入框 ---------- */
 function makePin(root) {
@@ -390,63 +578,124 @@ function makePin(root) {
   };
 }
 
-/* ---------- 頭像 ---------- */
-const PRESETS = ["🐱", "🐶", "🐰", "🦊", "🐼", "🐯", "🐸", "🐵", "🦁", "🐧", "🐻", "🐨"];
-function safeAvatarUrl(u) {
-  return typeof u === "string" && u.startsWith(SUPABASE_URL + "/storage/v1/object/public/" + BUCKET + "/");
+/* ---------- 預設頭像：12 款原創卡通人物（非動物） ---------- */
+const AV = {
+  explorer: ["小探險家", '<rect width="64" height="64" fill="#ffe7bf"/><circle cx="32" cy="38" r="17" fill="#ffd9b8"/><path d="M14 33a18 17 0 0 1 36 0z" fill="#f08a24"/><rect x="10" y="31" width="44" height="5" rx="2.5" fill="#d9731a"/><circle cx="26" cy="41" r="2.2" fill="#3b2f2f"/><circle cx="38" cy="41" r="2.2" fill="#3b2f2f"/><path d="M27 47q5 4.5 10 0" stroke="#3b2f2f" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="21.5" cy="46" r="2.6" fill="#ffb3a7" opacity=".7"/><circle cx="42.5" cy="46" r="2.6" fill="#ffb3a7" opacity=".7"/>'],
+  astronaut: ["小太空人", '<rect width="64" height="64" fill="#1c2a56"/><circle cx="12" cy="14" r="1.3" fill="#fff"/><circle cx="53" cy="10" r="1.6" fill="#fff"/><circle cx="55" cy="52" r="1.2" fill="#fff"/><circle cx="32" cy="35" r="23" fill="#eef2f8" stroke="#a9b9d3" stroke-width="2.5"/><ellipse cx="32" cy="35" rx="17" ry="14" fill="#2a3a6e"/><ellipse cx="25" cy="29.5" rx="4" ry="2.4" fill="#fff" opacity=".35"/><circle cx="26" cy="36" r="2.2" fill="#9fe8ff"/><circle cx="38" cy="36" r="2.2" fill="#9fe8ff"/><path d="M28 42q4 3.5 8 0" stroke="#9fe8ff" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+  robot: ["機器人", '<rect width="64" height="64" fill="#d3e9ff"/><line x1="32" y1="9" x2="32" y2="20" stroke="#7d8da0" stroke-width="3"/><circle cx="32" cy="8" r="3.5" fill="#ff6b6b"/><rect x="14" y="20" width="36" height="31" rx="8" fill="#b4c2d1" stroke="#7d8da0" stroke-width="2"/><rect x="9" y="30" width="5" height="11" rx="2" fill="#7d8da0"/><rect x="50" y="30" width="5" height="11" rx="2" fill="#7d8da0"/><rect x="20" y="28" width="9" height="9" rx="2" fill="#38d6ff"/><rect x="35" y="28" width="9" height="9" rx="2" fill="#38d6ff"/><rect x="22" y="42" width="20" height="5" rx="2" fill="#5b6b7c"/><path d="M27 42v5M32 42v5M37 42v5" stroke="#b4c2d1" stroke-width="1.5"/>'],
+  ghost: ["小幽靈", '<rect width="64" height="64" fill="#e6defc"/><path d="M15 52V30a17 17 0 0 1 34 0v22l-5.7-4.5L38 52l-6-4.5L26 52l-5.7-4.5z" fill="#fff" stroke="#c9bcf0" stroke-width="2" stroke-linejoin="round"/><ellipse cx="26" cy="31" rx="2.6" ry="3.6" fill="#33264d"/><ellipse cx="38" cy="31" rx="2.6" ry="3.6" fill="#33264d"/><ellipse cx="32" cy="39" rx="3" ry="3.4" fill="#33264d"/><circle cx="21" cy="37" r="2.8" fill="#ffb3c8" opacity=".8"/><circle cx="43" cy="37" r="2.8" fill="#ffb3c8" opacity=".8"/>'],
+  wizard: ["小巫師", '<rect width="64" height="64" fill="#e3d9ff"/><circle cx="32" cy="42" r="13" fill="#ffd9b8"/><path d="M32 6L47 33H17z" fill="#6c4cc9"/><ellipse cx="32" cy="34" rx="20" ry="4.5" fill="#563bb0"/><path d="M32 17l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#ffd54a"/><circle cx="27" cy="42" r="2" fill="#3b2f2f"/><circle cx="37" cy="42" r="2" fill="#3b2f2f"/><path d="M26 49Q32 54 38 49Q38 58 32 61Q26 58 26 49z" fill="#f1f1f1" stroke="#d8d8d8" stroke-width="1"/><circle cx="22.5" cy="46" r="2.4" fill="#ffb3a7" opacity=".7"/><circle cx="41.5" cy="46" r="2.4" fill="#ffb3a7" opacity=".7"/>'],
+  chef: ["小廚師", '<rect width="64" height="64" fill="#ffe1e1"/><circle cx="32" cy="41" r="14" fill="#ffd9b8"/><circle cx="23" cy="21" r="8" fill="#fff"/><circle cx="32" cy="17" r="9" fill="#fff"/><circle cx="41" cy="21" r="8" fill="#fff"/><rect x="21" y="23" width="22" height="11" rx="2" fill="#fff"/><rect x="21" y="30" width="22" height="4" fill="#e6e6e6"/><circle cx="27" cy="42" r="2" fill="#3b2f2f"/><circle cx="37" cy="42" r="2" fill="#3b2f2f"/><path d="M26 47.5q3-2.3 6 0q3-2.3 6 0" stroke="#7a4a2b" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M28 51.5q4 3 8 0" stroke="#3b2f2f" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+  ninja: ["小忍者", '<rect width="64" height="64" fill="#d6f1e3"/><circle cx="32" cy="36" r="18" fill="#2d3436"/><rect x="17" y="30" width="30" height="12" rx="6" fill="#ffd9b8"/><circle cx="26" cy="36" r="2.4" fill="#2d3436"/><circle cx="38" cy="36" r="2.4" fill="#2d3436"/><rect x="14" y="24" width="36" height="5" rx="2.5" fill="#e74c3c"/><path d="M50 26l9-3-3 8z" fill="#e74c3c"/>'],
+  pirate: ["小海盜", '<rect width="64" height="64" fill="#d4eaff"/><circle cx="32" cy="40" r="16" fill="#ffd9b8"/><path d="M15 36a17 15 0 0 1 34 0z" fill="#e0453a"/><rect x="14" y="34" width="36" height="5" rx="2.5" fill="#c0392b"/><circle cx="24" cy="28" r="1.5" fill="#fff"/><circle cx="32" cy="25" r="1.5" fill="#fff"/><circle cx="40" cy="28" r="1.5" fill="#fff"/><path d="M17 41L39 47" stroke="#222" stroke-width="1.6"/><circle cx="25" cy="44" r="4.2" fill="#222"/><circle cx="39" cy="44" r="2.2" fill="#3b2f2f"/><path d="M27 52q5 4 10 0" stroke="#3b2f2f" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+  alien: ["外星人", '<rect width="64" height="64" fill="#dcffe0"/><line x1="24" y1="14" x2="21" y2="7" stroke="#4fb86a" stroke-width="2.5"/><circle cx="21" cy="6" r="3" fill="#ffd54a"/><line x1="40" y1="14" x2="43" y2="7" stroke="#4fb86a" stroke-width="2.5"/><circle cx="43" cy="6" r="3" fill="#ffd54a"/><ellipse cx="32" cy="36" rx="18" ry="21" fill="#7bd88f"/><path d="M17 33q6-4 11 4q-5 7-11-4z" fill="#1d2b2f"/><path d="M47 33q-6-4-11 4q5 7 11-4z" fill="#1d2b2f"/><path d="M27 49q5 4 10 0" stroke="#1d2b2f" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="23" cy="34.5" r="1.3" fill="#fff"/><circle cx="41" cy="34.5" r="1.3" fill="#fff"/>'],
+  princess: ["小公主", '<rect width="64" height="64" fill="#ffe6f2"/><path d="M13 58V34a19 20 0 0 1 38 0v24z" fill="#8a5a3c"/><circle cx="32" cy="38" r="15" fill="#ffd9b8"/><path d="M17 31q15-13 30 0q-4-9-15-9t-15 9z" fill="#8a5a3c"/><path d="M20 24L24 15L29 21L32 13L35 21L40 15L44 24z" fill="#ffd54a" stroke="#e0a800" stroke-width="1"/><circle cx="26" cy="39" r="2.1" fill="#3b2f2f"/><circle cx="38" cy="39" r="2.1" fill="#3b2f2f"/><path d="M28 45q4 3.5 8 0" stroke="#d6455d" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="21.5" cy="43.5" r="2.5" fill="#ffb3a7" opacity=".7"/><circle cx="42.5" cy="43.5" r="2.5" fill="#ffb3a7" opacity=".7"/>'],
+  coolkid: ["酷小子", '<rect width="64" height="64" fill="#fff1c4"/><circle cx="32" cy="38" r="16" fill="#ffd9b8"/><path d="M15 34L19 20L25 27L29 15L34 26L40 17L43 27L49 22L49 34Q41 28 32 28T15 34z" fill="#2d2a32"/><rect x="18" y="35" width="12" height="8" rx="3" fill="#1f1f24"/><rect x="34" y="35" width="12" height="8" rx="3" fill="#1f1f24"/><rect x="29" y="37" width="6" height="2" fill="#1f1f24"/><path d="M26 50q6 5 12 0" stroke="#3b2f2f" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+  monster: ["小怪獸", '<rect width="64" height="64" fill="#ffe8d6"/><path d="M19 28l2-10 6 6z" fill="#f2c94c"/><path d="M45 28l-2-10-6 6z" fill="#f2c94c"/><path d="M12 44a20 21 0 0 1 40 0q0 12-20 12t-20-12z" fill="#9b6bdc"/><circle cx="32" cy="36" r="9" fill="#fff"/><circle cx="32" cy="37" r="4.2" fill="#2b1d4a"/><circle cx="30.5" cy="35.5" r="1.3" fill="#fff"/><path d="M23 47q9 7 18 0" fill="#fff" stroke="#2b1d4a" stroke-width="2" stroke-linejoin="round"/>']
+};
+const AV_KEYS = Object.keys(AV);
+function svgOf(key) {
+  return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + AV[key][0] + '">' + AV[key][1] + '</svg>';
 }
+function safeAvatarUrl(u) { return safeFileUrl(u); }
 function paintAvatar(el, av, local) {
   el.textContent = "";
   if (local || safeAvatarUrl(av)) {
     const img = document.createElement("img");
     img.src = av; img.alt = "";
     el.appendChild(img);
+  } else if (typeof av === "string" && av.startsWith("svg:") && AV[av.slice(4)]) {
+    el.innerHTML = svgOf(av.slice(4));   // 內容來自上面的固定圖庫，不是使用者輸入
   } else if (typeof av === "string" && av.startsWith("emoji:")) {
     el.textContent = av.slice(6);
   } else {
     el.textContent = "🙂";
   }
 }
-function repaintAvatars(userId) {
+function repaintMember(userId) {
   const m = members.get(userId);
   document.querySelectorAll('.avatar[data-uid="' + userId + '"]').forEach(el => paintAvatar(el, m && m.avatar));
+  document.querySelectorAll('.subt[data-uid="' + userId + '"]').forEach(el => { el.textContent = subtitleText(userId); });
 }
-async function resizeImage(file, size) {
-  const bmp = await createImageBitmap(file);
-  const s = Math.min(bmp.width, bmp.height);
+function subtitleText(userId) {
+  const m = members.get(userId);
+  return m && m.subtitle ? "・" + m.subtitle : "";
+}
+
+/* ---------- 圖片處理 ---------- */
+async function createImageBitmapSafe(blob) {
+  try { return await createImageBitmap(blob, { imageOrientation: "from-image" }); }
+  catch (e) { return await createImageBitmap(blob); }
+}
+async function scaleToBlob(blob, maxPx, quality) {
+  const bmp = await createImageBitmapSafe(blob);
+  const s = Math.min(1, maxPx / Math.max(bmp.width, bmp.height));
+  const w = Math.max(1, Math.round(bmp.width * s)), h = Math.max(1, Math.round(bmp.height * s));
   const c = document.createElement("canvas");
-  c.width = c.height = size;
-  c.getContext("2d").drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, size, size);
-  return new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(bmp, 0, 0, w, h);
+  if (bmp.close) bmp.close();
+  return new Promise(res => c.toBlob(res, "image/jpeg", quality));
 }
+async function prepareImage(file) {
+  const keep = { blob: file, name: file.name || "photo", type: file.type || "" };
+  if (!/^image\/(jpeg|png|webp)$/.test(keep.type)) return keep;
+  if (file.size <= COMPRESS_OVER) return keep;
+  try {
+    const blob = await scaleToBlob(file, COMPRESS_MAX_PX, 0.86);
+    if (!blob || blob.size >= file.size) return keep;
+    return { blob, name: keep.name.replace(/\.[^.]+$/, "") + ".jpg", type: "image/jpeg" };
+  } catch (e) { return keep; }
+}
+function extOf(name, type) {
+  const m = /\.([A-Za-z0-9]{1,8})$/.exec(name || "");
+  if (m) return m[1].toLowerCase();
+  if (type === "image/jpeg") return "jpg";
+  if (type === "image/png") return "png";
+  if (type === "image/webp") return "webp";
+  return "bin";
+}
+function uniq() { return Date.now() + "-" + Math.random().toString(36).slice(2, 8); }
+async function uploadTo(path, blob, type) {
+  const { error } = await db.storage.from(BUCKET).upload(path, blob, { contentType: type || "application/octet-stream" });
+  if (error) throw error;
+  return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+/* ---------- 頭像選擇器 ---------- */
 function makeAvatarPicker(root, current) {
   root.innerHTML = "";
-  const state = { emoji: null, blob: null, url: null, previewUrl: null };
-  if (typeof current === "string" && current.startsWith("emoji:")) state.emoji = current.slice(6);
+  const state = { key: null, emoji: null, blob: null, url: null, previewUrl: null };
+  if (typeof current === "string" && current.startsWith("svg:") && AV[current.slice(4)]) state.key = current.slice(4);
+  else if (typeof current === "string" && current.startsWith("emoji:")) state.emoji = current.slice(6);
   else if (safeAvatarUrl(current)) state.url = current;
-  else state.emoji = PRESETS[Math.floor(Math.random() * PRESETS.length)];
+  else state.key = AV_KEYS[Math.floor(Math.random() * AV_KEYS.length)];
 
   const preview = document.createElement("div");
   preview.className = "avatar big";
   const grid = document.createElement("div");
   grid.className = "avgrid";
   const up = document.createElement("button");
-  up.type = "button"; up.className = "ghost"; up.textContent = "📷 上傳我的照片";
+  up.type = "button"; up.className = "ghost"; up.textContent = "📷 上傳我的圖片";
   const file = document.createElement("input");
   file.type = "file"; file.accept = "image/*"; file.className = "hidden";
   const hint = document.createElement("div");
-  hint.className = "hint"; hint.textContent = "選一個圖示，或上傳自己的照片（會自動裁成圓形小圖）";
+  hint.className = "hint"; hint.textContent = "選一個卡通人物，或上傳自己的圖片（會自動裁成圓形小圖）";
 
   function refresh() {
     if (state.blob) paintAvatar(preview, state.previewUrl, true);
+    else if (state.key) paintAvatar(preview, "svg:" + state.key);
     else if (state.emoji) paintAvatar(preview, "emoji:" + state.emoji);
     else paintAvatar(preview, state.url);
-    grid.querySelectorAll("button").forEach(b => b.classList.toggle("on", !state.blob && b.textContent === state.emoji));
+    grid.querySelectorAll("button").forEach(b => b.classList.toggle("on", !state.blob && b.dataset.key === state.key));
   }
-  PRESETS.forEach(em => {
+  AV_KEYS.forEach(k => {
     const b = document.createElement("button");
-    b.type = "button"; b.textContent = em;
-    b.onclick = () => { state.emoji = em; state.blob = null; refresh(); };
+    b.type = "button"; b.dataset.key = k; b.title = AV[k][0];
+    b.innerHTML = svgOf(k);
+    b.onclick = () => { state.key = k; state.emoji = null; state.blob = null; refresh(); };
     grid.appendChild(b);
   });
   up.onclick = () => file.click();
@@ -455,7 +704,13 @@ function makeAvatarPicker(root, current) {
     file.value = "";
     if (!f) return;
     try {
-      state.blob = await resizeImage(f, 160);
+      const bmp = await createImageBitmapSafe(f);
+      const s = Math.min(bmp.width, bmp.height);
+      const c = document.createElement("canvas");
+      c.width = c.height = 160;
+      c.getContext("2d").drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, 160, 160);
+      if (bmp.close) bmp.close();
+      state.blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
       if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
       state.previewUrl = URL.createObjectURL(state.blob);
       refresh();
@@ -465,12 +720,8 @@ function makeAvatarPicker(root, current) {
   refresh();
   return {
     async resolve() {
-      if (state.blob) {
-        const path = roomId + "/avatars/" + uid + "-" + Date.now() + ".jpg";
-        const { error } = await db.storage.from(BUCKET).upload(path, state.blob, { contentType: "image/jpeg" });
-        if (error) throw error;
-        return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-      }
+      if (state.blob) return uploadTo(roomId + "/avatars/" + uid + "-" + Date.now() + ".jpg", state.blob, "image/jpeg");
+      if (state.key) return "svg:" + state.key;
       if (state.emoji) return "emoji:" + state.emoji;
       return state.url;
     }
@@ -489,8 +740,8 @@ window.addEventListener("hashchange", () => location.reload());
 let createPin, joinPin, adminPin, joinAvatarPicker, profileAvatarPicker;
 
 async function init() {
-  if (SUPABASE_URL.includes("貼上") || SUPABASE_KEY.includes("貼上")) {
-    showEnded("尚未完成設定：請在 index.html 最上方填入 Supabase 網址與金鑰。");
+  if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes("貼上") || SUPABASE_KEY.includes("貼上")) {
+    showEnded("尚未完成設定：請確認 config.js 已上傳到 GitHub（與 index.html 同一層），並填入 Supabase 網址與金鑰。");
     return;
   }
   db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -516,7 +767,7 @@ async function init() {
   }
 
   const { data: pub, error } = await db.rpc("room_public", { p_room: roomId });
-  if (error) { showEnded("讀取聊天室失敗：" + error.message + "（是否已執行 update_v3.sql？）"); return; }
+  if (error) { showEnded("讀取聊天室失敗：" + error.message + "（是否已執行 update_v3.sql 與 update_v1.3.sql？）"); return; }
   if (!pub) { showEnded("找不到這個聊天室，請確認網址是否完整。"); return; }
   if (pub.expires_at && new Date(pub.expires_at) <= new Date()) { showEnded("這個聊天室已結束。"); return; }
 
@@ -529,7 +780,7 @@ async function init() {
 
   const { data: mine } = await db.from("room_members").select("*").eq("room", roomId).eq("user_id", uid).maybeSingle();
   if (mine) {
-    me = { name: mine.name, avatar: mine.avatar || "" };
+    me = { name: mine.name, avatar: mine.avatar || "", subtitle: mine.subtitle || "" };
     await enterChat(false);
   } else {
     showJoin(pub);
@@ -560,16 +811,24 @@ $("createForm").onsubmit = async e => {
   $("createBtn").disabled = false;
   if (error) { msg.textContent = "建立失敗：" + error.message; return; }
   lsSet("chat_ak_" + id, key);
-  const base = (SHARE_BASE || (location.origin + location.pathname)).split("#")[0];
-  $("cFriend").value = base + "#" + id;
-  $("cPin").value = pin;
-  $("cAdmin").value = base + "#" + id + "." + key;
+  const base = baseUrl();
+  const friendUrl = base + "#" + id;
+  const adminUrl = base + "#" + id + "." + key;
+  const block =
+    "【聊天室：" + title + "】　建立於 " + fmtFull(Date.now()) + "\n" +
+    "開放期限：" + (expires ? "到 " + fmtFull(expires) : "不限時") + "\n\n" +
+    "① 朋友邀請網址（貼給朋友）：\n" + friendUrl + "\n\n" +
+    "② 通關密碼（另外私訊朋友）：" + pin + "\n\n" +
+    "③ 房主專用網址（只有我自己保存，不要外傳！）：\n" + adminUrl + "\n\n" +
+    "⚠ 這段內容僅供自己保存，請勿整段轉貼給朋友。";
+  $("cBlock").value = block;
+  $("cCopy").onclick = () => copyText(block, "已複製！請貼到備忘錄或 LINE 的「我的筆記」保存");
   $("cEnter").onclick = () => { location.hash = id + "." + key; };
   show("created");
 };
 
 /* ---------- 加入聊天室 ---------- */
-let needPin = false;
+let needPin = false, lockTimer = null;
 function showJoin(pub) {
   $("joinTitle").textContent = pub.title;
   needPin = !!pub.has_pin && !adminKey;
@@ -579,6 +838,23 @@ function showJoin(pub) {
   $("joinName").value = lsGet("chat_name");
   show("join");
   $("joinName").focus();
+}
+function startLockCountdown(minutes) {
+  clearInterval(lockTimer);
+  const until = Date.now() + minutes * 60000;
+  $("joinBtn").disabled = true;
+  const tick = () => {
+    const left = Math.ceil((until - Date.now()) / 1000);
+    if (left <= 0) {
+      clearInterval(lockTimer);
+      $("joinBtn").disabled = false;
+      $("joinMsg").textContent = "鎖定時間已結束，可以再試一次。";
+      return;
+    }
+    $("joinMsg").textContent = "通關密碼已鎖定（連續輸錯 " + PIN_TRIES + " 次）。請於 " + pad2(Math.floor(left / 60)) + ":" + pad2(left % 60) + " 後再試，或聯絡房主。";
+  };
+  tick();
+  lockTimer = setInterval(tick, 1000);
 }
 $("joinForm").onsubmit = async e => {
   e.preventDefault();
@@ -592,25 +868,30 @@ $("joinForm").onsubmit = async e => {
   const { data, error } = await db.rpc("join_room", { p_room: roomId, p_pin: pin, p_name: name, p_admin_key: adminKey || null });
   if (error) { msg.textContent = "進入失敗：" + error.message; $("joinBtn").disabled = false; return; }
   if (!data.ok) {
-    const map = {
-      wrong_pin: "通關密碼不正確，請再試一次。",
-      locked: "輸入錯誤次數過多，請 10 分鐘後再試。",
-      expired: "這個聊天室已結束。",
-      not_found: "找不到這個聊天室。",
-      need_name: "請輸入名稱。",
-      no_session: "連線異常，請重新整理後再試。"
-    };
-    msg.textContent = map[data.reason] || "無法進入聊天室。";
-    if (data.reason === "wrong_pin") joinPin.clear();
     $("joinBtn").disabled = false;
+    if (data.reason === "wrong_pin") {
+      msg.textContent = "通關密碼不正確。已錯誤 " + data.used + " 次，尚可容錯 " + data.left + " 次。連續錯誤 " + PIN_TRIES + " 次，將鎖定 10 分鐘，期間無法進入。";
+      joinPin.clear();
+    } else if (data.reason === "locked") {
+      startLockCountdown(data.minutes || 10);
+      joinPin.clear();
+    } else if (data.reason === "need_pin") {
+      needPin = true; adminKey = "";
+      $("joinPinWrap").classList.remove("hidden");
+      msg.textContent = "房主專用網址無效，請改輸入通關密碼。";
+      joinPin.focus();
+    } else {
+      const map = { expired: "這個聊天室已結束。", not_found: "找不到這個聊天室。", need_name: "請輸入名稱。", no_session: "連線異常，請重新整理後再試。" };
+      msg.textContent = map[data.reason] || "無法進入聊天室。";
+    }
     return;
   }
-  me.name = name;
+  me.name = name; me.subtitle = "";
   lsSet("chat_name", name);
   try {
     me.avatar = await joinAvatarPicker.resolve();
     await db.from("room_members").update({ avatar: me.avatar }).eq("room", roomId).eq("user_id", uid);
-  } catch (err) { /* 頭像失敗不影響進入，可稍後在 👤 重設 */ }
+  } catch (err) { /* 頭像失敗不影響進入，可稍後在「更多」→「我的名稱・頭像」重設 */ }
   $("joinBtn").disabled = false;
   await enterChat(true);
 };
@@ -619,6 +900,11 @@ $("joinForm").onsubmit = async e => {
 async function fetchRoom() {
   const { data, error } = await db.rpc("get_room", { p_room: roomId });
   return error ? null : data;
+}
+function updateMenuState() {
+  $("adminItem").classList.toggle("hidden", !isAdmin);
+  $("getAdminItem").classList.toggle("hidden", isAdmin);
+  $("markItem").classList.toggle("hidden", !lsGet(markKey()));
 }
 
 async function enterChat(newJoin) {
@@ -636,27 +922,30 @@ async function enterChat(newJoin) {
   baseTitle = info.title;
   document.title = baseTitle;
   $("roomName").textContent = baseTitle;
-  $("adminBtn").classList.toggle("hidden", !isAdmin);
   $("verText").textContent = "聊天室版本 " + APP_VERSION + "　" + APP_DATE;
+  updateMenuState();
   updateCountdown();
   updateNoticeDot();
   tickTimer = setInterval(updateCountdown, 1000);
   refreshTimer = setInterval(refreshRoom, 60000);
 
   await loadMembers();
-  if (!members.has(uid)) members.set(uid, { user_id: uid, name: me.name, avatar: me.avatar });
+  if (!members.has(uid)) members.set(uid, { user_id: uid, name: me.name, avatar: me.avatar, subtitle: me.subtitle });
+  const mm = members.get(uid);
+  me.subtitle = mm.subtitle || "";
   await loadHistory();
+  placeInitialPosition();
 
   channel = db.channel("room-" + roomId, { config: { presence: { key: uid } } })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: "room=eq." + roomId },
       p => addMsg(p.new, true))
     .on("postgres_changes", { event: "*", schema: "public", table: "room_members", filter: "room=eq." + roomId },
-      p => { const m = p.new; if (m && m.user_id) { members.set(m.user_id, m); repaintAvatars(m.user_id); } })
+      p => { const m = p.new; if (m && m.user_id) { members.set(m.user_id, m); repaintMember(m.user_id); } })
     .on("presence", { event: "sync" }, updatePresence)
     .on("broadcast", { event: "typing" }, ({ payload }) => {
       if (payload && payload.uid !== uid) { typers[payload.uid] = { name: payload.name, t: Date.now() }; renderTyping(); }
     })
-    .on("broadcast", { event: "cleared" }, () => { resetList(); loadHistory(); })
+    .on("broadcast", { event: "cleared" }, () => { resetList(); loadHistory().then(placeInitialPosition); })
     .subscribe(async status => { if (status === "SUBSCRIBED") await channel.track({ name: me.name }); });
 
   pollTimer = setInterval(async () => {
@@ -670,7 +959,8 @@ async function enterChat(newJoin) {
   const last = Number(lsGet(key) || 0);
   if (newJoin || Date.now() - last > 10 * 60000) {
     lsSet(key, String(Date.now()));
-    await insertMsg({ kind: "system", content: me.name + (newJoin ? " 加入了聊天室" : " 進入了聊天室") });
+    const sub = me.subtitle ? "（" + me.subtitle + "）" : "";
+    await insertMsg({ kind: "system", content: me.name + sub + (newJoin ? " 加入了聊天室" : " 進入了聊天室") });
   }
 }
 
@@ -682,12 +972,12 @@ async function loadHistory() {
   const { data, error } = await db.from("messages").select("*").eq("room", roomId).order("id", { ascending: false }).limit(500);
   if (error) { setStatus("讀取失敗：" + error.message); return; }
   data.reverse().forEach(m => addMsg(m, false));
-  $("list").scrollTop = $("list").scrollHeight;
 }
 function resetList() {
   $("list").innerHTML = "";
-  seen.clear(); msgMap.clear(); lastId = 0; replyTo = null;
+  seen.clear(); msgMap.clear(); lastId = 0; replyTo = null; placed = false; newCount = 0;
   $("replyBar").classList.add("hidden");
+  updateJump();
 }
 
 /* ---------- 期限倒數 ---------- */
@@ -708,7 +998,7 @@ function updateCountdown() {
 function lockRoom() {
   clearInterval(pollTimer); clearInterval(tickTimer); clearInterval(refreshTimer);
   if (channel) db.removeChannel(channel);
-  showEnded("這個聊天室已到期結束。");
+  showEnded("這個聊天室已到期結束，謝謝您的參與。");
 }
 async function refreshRoom() {
   const info = await fetchRoom();
@@ -718,7 +1008,7 @@ async function refreshRoom() {
   baseTitle = info.title;
   $("roomName").textContent = info.title;
   if (!document.hidden) document.title = info.title;
-  $("adminBtn").classList.toggle("hidden", !isAdmin);
+  updateMenuState();
   updateCountdown();
   updateNoticeDot();
 }
@@ -740,10 +1030,13 @@ let lastTypingSent = 0;
 /* ---------- 顯示訊息 ---------- */
 function isMine(m) { return m.user_id ? m.user_id === uid : (!!m.client_id && m.client_id === legacyCid); }
 
-function renderRich(el, text) {
+function mentionRegex() {
   const names = Array.from(members.values()).map(x => x.name).filter(Boolean).sort((a, b) => b.length - a.length);
   const alts = ["全部人"].concat(names).map(x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const re = new RegExp("@(" + alts.join("|") + ")", "g");
+  return new RegExp("@(" + alts.join("|") + ")", "g");
+}
+function renderRich(el, text) {
+  const re = mentionRegex();
   let last = 0, mm;
   while ((mm = re.exec(text))) {
     if (mm.index > last) el.appendChild(document.createTextNode(text.slice(last, mm.index)));
@@ -753,6 +1046,57 @@ function renderRich(el, text) {
     last = mm.index + mm[0].length;
   }
   if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+}
+
+function buildSingleMedia(url, name, type) {
+  const box = document.createElement("div");
+  box.className = "media";
+  type = type || "";
+  if (type.startsWith("image/")) {
+    const img = document.createElement("img");
+    img.className = "single"; img.src = url; img.alt = name || "圖片"; img.loading = "lazy";
+    img.onclick = () => openLightbox([{ url, name }], 0);
+    box.appendChild(img);
+  } else if (type.startsWith("video/")) {
+    const v = document.createElement("video");
+    v.src = url; v.controls = true; v.preload = "metadata";
+    box.appendChild(v);
+  } else if (type.startsWith("audio/")) {
+    const au = document.createElement("audio");
+    au.src = url; au.controls = true;
+    box.appendChild(au);
+  } else {
+    const a = document.createElement("a");
+    a.href = url; a.target = "_blank"; a.rel = "noopener";
+    a.textContent = "📎 " + (name || "下載檔案");
+    box.appendChild(a);
+  }
+  return box;
+}
+function buildAlbum(m, files) {
+  const wrap = document.createElement("div");
+  wrap.className = "media album";
+  const grid = document.createElement("div");
+  grid.className = "albumgrid n" + Math.min(files.length, 4);
+  files.slice(0, 4).forEach((f, i) => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    const img = document.createElement("img");
+    img.src = safeFileUrl(f.thumb) ? f.thumb : f.url; img.loading = "lazy"; img.alt = f.name || "";
+    cell.appendChild(img);
+    if (i === 3 && files.length > 4) {
+      const more = document.createElement("div");
+      more.className = "more"; more.textContent = "+" + (files.length - 4);
+      cell.appendChild(more);
+    }
+    grid.appendChild(cell);
+  });
+  grid.onclick = () => openAlbum(m, files);
+  const cap = document.createElement("div");
+  cap.className = "albumcap";
+  cap.textContent = "📷 " + files.length + " 張照片・點開查看／下載";
+  wrap.append(grid, cap);
+  return wrap;
 }
 
 function addMsg(m, live) {
@@ -767,14 +1111,14 @@ function addMsg(m, live) {
 
   if (m.kind === "system") {
     const d = document.createElement("div");
-    d.className = "sys"; d.id = "m" + m.id;
+    d.className = "sys"; d.id = "m" + m.id; d.dataset.mid = m.id;
     d.textContent = fmtTime(m.created_at) + "　" + m.content;
     list.appendChild(d);
   } else {
     const mentionedMe = !mine && (m.mention_all || (m.mentions || []).includes(uid));
     const wrap = document.createElement("div");
     wrap.className = "msg" + (mine ? " me" : "");
-    wrap.id = "m" + m.id;
+    wrap.id = "m" + m.id; wrap.dataset.mid = m.id;
 
     const av = document.createElement("div");
     av.className = "avatar"; av.dataset.uid = m.user_id || "";
@@ -786,62 +1130,198 @@ function addMsg(m, live) {
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    const who = document.createElement("span");
-    who.textContent = m.name + "　" + fmtTime(m.created_at);
-    const rb = document.createElement("button");
-    rb.type = "button"; rb.className = "rbtn"; rb.textContent = "↩"; rb.title = "回覆這則訊息";
-    rb.onclick = () => setReply(m);
-    meta.append(who, rb);
+    const nm = document.createElement("span");
+    nm.className = "nm"; nm.textContent = m.name;
+    const sb = document.createElement("span");
+    sb.className = "subt"; sb.dataset.uid = m.user_id || ""; sb.textContent = subtitleText(m.user_id);
+    const tm = document.createElement("span");
+    tm.textContent = fmtTime(m.created_at);
+    meta.append(nm, sb, tm);
 
     const bubble = document.createElement("div");
     bubble.className = "bubble" + (mentionedMe ? " mentioned" : "");
-    bubble.ondblclick = () => setReply(m);
 
     if (m.reply_to) {
       const o = msgMap.get(m.reply_to);
       const q = document.createElement("div");
       q.className = "quote";
       q.textContent = o ? "↩ 回覆 " + o.name + "：" + snippet(o) : "↩ 回覆較早的訊息";
-      q.onclick = () => {
-        const t = document.getElementById("m" + m.reply_to);
-        if (t) { t.scrollIntoView({ block: "center", behavior: "smooth" }); t.classList.add("flash"); setTimeout(() => t.classList.remove("flash"), 1500); }
-      };
+      q.onclick = () => jumpToMessage(m.reply_to);
       bubble.appendChild(q);
     }
     if (m.content) renderRich(bubble, m.content);
 
-    if (m.file_url && /^https:\/\//.test(m.file_url)) {
-      if (m.content) bubble.appendChild(document.createElement("br"));
-      const type = m.file_type || "";
-      if (type.startsWith("image/")) {
-        const a = document.createElement("a");
-        a.href = m.file_url; a.target = "_blank"; a.rel = "noopener";
-        const img = document.createElement("img");
-        img.src = m.file_url; img.alt = m.file_name || "圖片"; img.loading = "lazy";
-        a.appendChild(img); bubble.appendChild(a);
-      } else if (type.startsWith("video/")) {
-        const v = document.createElement("video");
-        v.src = m.file_url; v.controls = true; v.preload = "metadata";
-        bubble.appendChild(v);
-      } else if (type.startsWith("audio/")) {
-        const au = document.createElement("audio");
-        au.src = m.file_url; au.controls = true;
-        bubble.appendChild(au);
-      } else {
-        const a = document.createElement("a");
-        a.href = m.file_url; a.target = "_blank"; a.rel = "noopener";
-        a.textContent = "📎 " + (m.file_name || "下載檔案");
-        bubble.appendChild(a);
-      }
-    }
+    const files = Array.isArray(m.files) ? m.files.filter(f => f && safeFileUrl(f.url)) : [];
+    if (files.length >= 2) bubble.appendChild(buildAlbum(m, files));
+    else if (files.length === 1) bubble.appendChild(buildSingleMedia(files[0].url, files[0].name, files[0].type || "image/jpeg"));
+    else if (m.file_url && safeFileUrl(m.file_url)) bubble.appendChild(buildSingleMedia(m.file_url, m.file_name, m.file_type));
 
     col.append(meta, bubble);
     wrap.append(av, col);
     list.appendChild(wrap);
     if (live && !mine) notify(m, mentionedMe);
   }
+
+  if (live && !mine && !near) { newCount++; updateJump(); }
   if (near || mine) list.scrollTop = list.scrollHeight;
 }
+
+function jumpToMessage(id) {
+  const t = document.getElementById("m" + id);
+  if (!t) { toast("這則訊息較舊，目前畫面尚未載入"); return false; }
+  t.scrollIntoView({ block: "center", behavior: "smooth" });
+  t.classList.add("flash");
+  setTimeout(() => t.classList.remove("flash"), 1600);
+  return true;
+}
+
+/* ---------- 點一下回覆、長按（右鍵）開選單 ---------- */
+let lastLongPress = 0, pressTimer = null, pressX = 0, pressY = 0, menuMsgId = 0;
+$("list").addEventListener("click", e => {
+  if (Date.now() - lastLongPress < 700) return;
+  if (e.target.closest("a, video, audio, img, .quote, .albumgrid, .divider")) return;
+  if (window.getSelection && String(window.getSelection())) return;   // 正在選取文字時不觸發
+  const bub = e.target.closest(".bubble");
+  if (!bub) return;
+  const wrap = bub.closest(".msg");
+  const m = wrap && msgMap.get(Number(wrap.dataset.mid));
+  if (m) setReply(m);
+});
+function openMsgMenu(id) {
+  const m = msgMap.get(id);
+  if (!m || m.kind === "system" || !$("msgMenuModal").classList.contains("hidden")) return;
+  lastLongPress = Date.now();
+  menuMsgId = id;
+  $("msgMenuTitle").textContent = m.name + "：" + snippet(m).slice(0, 18);
+  $("mmCopy").classList.toggle("hidden", !m.content);
+  openModal("msgMenuModal");
+}
+$("list").addEventListener("contextmenu", e => {
+  const wrap = e.target.closest(".msg");
+  if (!wrap) return;
+  e.preventDefault();
+  openMsgMenu(Number(wrap.dataset.mid));
+});
+$("list").addEventListener("touchstart", e => {
+  const wrap = e.target.closest(".msg");
+  if (!wrap || e.touches.length !== 1) return;
+  pressX = e.touches[0].clientX; pressY = e.touches[0].clientY;
+  clearTimeout(pressTimer);
+  pressTimer = setTimeout(() => openMsgMenu(Number(wrap.dataset.mid)), 550);
+}, { passive: true });
+$("list").addEventListener("touchmove", e => {
+  const t = e.touches[0];
+  if (Math.abs(t.clientX - pressX) > 10 || Math.abs(t.clientY - pressY) > 10) clearTimeout(pressTimer);
+}, { passive: true });
+["touchend", "touchcancel"].forEach(ev => $("list").addEventListener(ev, () => clearTimeout(pressTimer), { passive: true }));
+$("mmReply").onclick = () => { closeModals(); const m = msgMap.get(menuMsgId); if (m) setReply(m); };
+$("mmMark").onclick = () => { closeModals(); setMark(menuMsgId); };
+$("mmCopy").onclick = () => { closeModals(); const m = msgMap.get(menuMsgId); if (m && m.content) copyText(m.content, "已複製訊息文字"); };
+
+/* ---------- 回覆 ---------- */
+function setReply(m) {
+  replyTo = { id: m.id };
+  $("replyText").textContent = "回覆 " + m.name + "：" + snippet(m);
+  $("replyBar").classList.remove("hidden");
+  $("msgInput").focus();
+}
+function clearReply() { replyTo = null; $("replyBar").classList.add("hidden"); }
+$("replyCancel").onclick = clearReply;
+
+/* ---------- 未讀標記、讀取位置、跳到最新 ---------- */
+function markKey() { return "chat_mark_" + roomId; }
+function readKey() { return "chat_read_" + roomId; }
+function makeDivider(kind, text) {
+  const d = document.createElement("div");
+  d.className = "divider " + kind;
+  d.textContent = text;
+  return d;
+}
+function clearDividers(kind) { document.querySelectorAll(".divider." + kind).forEach(x => x.remove()); }
+function insertMarkDivider(id) {
+  clearDividers("mark");
+  const el = document.getElementById("m" + id);
+  if (!el) return null;
+  const d = makeDivider("mark", "🔖 未讀標記：從這裡開始（點一下可清除）");
+  d.onclick = () => { if (confirm("要清除這個未讀標記嗎？")) clearMark(); };
+  el.parentNode.insertBefore(d, el);
+  return d;
+}
+function setMark(id) {
+  lsSet(markKey(), String(id));
+  insertMarkDivider(id);
+  updateMenuState();
+  toast("已標記。下次開啟聊天室會停留在這裡");
+}
+function clearMark() {
+  lsSet(markKey(), "");
+  clearDividers("mark");
+  updateMenuState();
+  toast("已清除未讀標記");
+}
+function jumpToMark() {
+  const id = Number(lsGet(markKey()));
+  if (!id) return;
+  let d = document.querySelector(".divider.mark");
+  if (!d) d = insertMarkDivider(id);
+  if (d) d.scrollIntoView({ block: "center", behavior: "smooth" });
+  else toast("標記的訊息較舊，目前畫面尚未載入");
+}
+function placeInitialPosition() {
+  const list = $("list");
+  const mark = Number(lsGet(markKey())) || 0;
+  const read = Number(lsGet(readKey())) || 0;
+  let target = null;
+  if (mark && msgMap.has(mark)) {
+    target = insertMarkDivider(mark);
+  } else if (read && read < lastId) {
+    const next = Array.from(list.children).find(el => el.dataset.mid && Number(el.dataset.mid) > read);
+    if (next) {
+      const d = makeDivider("new", "—— 以下為新訊息 ——");
+      next.parentNode.insertBefore(d, next);
+      target = d;
+    }
+  }
+  if (target) list.scrollTop = Math.max(0, target.offsetTop - list.clientHeight * 0.3);
+  else list.scrollTop = list.scrollHeight;
+  setTimeout(() => { placed = true; onListScroll(); }, 400);
+}
+function lastVisibleId() {
+  const list = $("list");
+  const bottom = list.scrollTop + list.clientHeight;
+  const nodes = list.children;
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const el = nodes[i];
+    if (el.dataset && el.dataset.mid && el.offsetTop < bottom - 12) return Number(el.dataset.mid);
+  }
+  return 0;
+}
+function saveReadPos(force) {
+  if (!placed || !roomId) return;
+  if (document.hidden && !force) return;
+  const id = lastVisibleId();
+  if (id > (Number(lsGet(readKey())) || 0)) lsSet(readKey(), String(id));
+}
+let saveTimer = null;
+function onListScroll() {
+  const list = $("list");
+  const dist = list.scrollHeight - list.scrollTop - list.clientHeight;
+  if (dist < 80) newCount = 0;
+  updateJump(dist);
+  if (!placed) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveReadPos(false), 500);
+}
+function updateJump(distArg) {
+  const list = $("list");
+  const dist = distArg != null ? distArg : list.scrollHeight - list.scrollTop - list.clientHeight;
+  const showIt = placed && dist > 300;
+  $("jump").classList.toggle("hidden", !showIt);
+  $("jump").textContent = newCount > 0 ? "⬇ 新訊息 " + newCount + " 則" : "⬇ 最新訊息";
+}
+$("list").addEventListener("scroll", onListScroll, { passive: true });
+$("jump").onclick = () => { $("list").scrollTo({ top: $("list").scrollHeight, behavior: "smooth" }); newCount = 0; };
+window.addEventListener("pagehide", () => saveReadPos(true));
 
 /* ---------- 新訊息通知 ---------- */
 let unread = 0, flashTimer = null;
@@ -857,18 +1337,17 @@ function notify(m, mentioned) {
   }
 }
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    unread = 0; clearInterval(flashTimer); flashTimer = null;
-    if (roomInfo) document.title = baseTitle;
-  }
+  if (document.hidden) { saveReadPos(true); return; }
+  unread = 0; clearInterval(flashTimer); flashTimer = null;
+  if (roomInfo) document.title = baseTitle;
 });
-$("bellBtn").onclick = async () => {
+async function askNotify() {
   if (!("Notification" in window)) { alert("這個瀏覽器不支援跳出通知，但分頁標題仍會閃動提醒。"); return; }
-  if (Notification.permission === "granted") { alert("通知已經開啟了。"); return; }
+  if (Notification.permission === "granted") { toast("通知已經開啟了"); return; }
   if (Notification.permission === "denied") { alert("通知被瀏覽器封鎖了。請按網址列左側的圖示，把「通知」改成允許，再重新整理。"); return; }
   const p = await Notification.requestPermission();
-  alert(p === "granted" ? "通知已開啟！" : "沒有開啟通知。");
-};
+  toast(p === "granted" ? "通知已開啟！" : "沒有開啟通知");
+}
 
 /* ---------- 送出訊息 ---------- */
 function collectMentions(text) {
@@ -883,10 +1362,11 @@ async function insertMsg(row) {
     if (row.content) Object.assign(payload, collectMentions(row.content));
   }
   const { data, error } = await db.from("messages").insert(payload).select().single();
-  if (error) { setStatus("送出失敗：" + error.message); return; }
+  if (error) { setStatus("送出失敗：" + error.message); return null; }
   setStatus("");
   if (payload.reply_to) clearReply();
   addMsg(data, false);
+  return data;
 }
 $("sendForm").onsubmit = async e => {
   e.preventDefault();
@@ -897,38 +1377,194 @@ $("sendForm").onsubmit = async e => {
   await insertMsg({ content: t });
 };
 
-/* ---------- 回覆 ---------- */
-function setReply(m) {
-  replyTo = { id: m.id };
-  $("replyText").textContent = "回覆 " + m.name + "：" + snippet(m);
-  $("replyBar").classList.remove("hidden");
-  $("msgInput").focus();
+/* ---------- 上傳：單檔 / 相簿 ---------- */
+async function sendSingle(file) {
+  try {
+    let blob = file, name = file.name || "檔案", type = file.type || "";
+    if (type.startsWith("image/")) { const p = await prepareImage(file); blob = p.blob; name = p.name; type = p.type; }
+    if (blob.size > MAX_MB * 1024 * 1024) { setStatus(name + " 超過 " + MAX_MB + "MB，無法上傳"); return; }
+    setStatus("上傳中…");
+    const url = await uploadTo(roomId + "/" + uniq() + "." + extOf(name, type), blob, type);
+    await insertMsg({ file_url: url, file_name: name, file_type: type });
+    setStatus("");
+  } catch (e) { setStatus("上傳失敗：" + (e.message || e)); }
 }
-function clearReply() { replyTo = null; $("replyBar").classList.add("hidden"); }
-$("replyCancel").onclick = clearReply;
-
-/* ---------- 檔案（照片／影片／檔案） ---------- */
-async function sendFile(file) {
-  if (file.size > MAX_MB * 1024 * 1024) { setStatus("檔案超過 " + MAX_MB + "MB，無法上傳"); return; }
-  setStatus("上傳中…");
-  const ext = ((file.name.split(".").pop() || "bin").replace(/[^A-Za-z0-9]/g, "").slice(0, 8)) || "bin";
-  const path = roomId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
-  const { error } = await db.storage.from(BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream" });
-  if (error) { setStatus("上傳失敗：" + error.message); return; }
-  const { data } = db.storage.from(BUCKET).getPublicUrl(path);
-  await insertMsg({ file_url: data.publicUrl, file_name: file.name, file_type: file.type || "" });
+async function sendFiles(fileList) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return;
+  const imgs = files.filter(f => (f.type || "").startsWith("image/"));
+  if (imgs.length >= 2 && imgs.length === files.length) { openAlbumUpload(imgs); return; }
+  for (const f of files) await sendSingle(f);
 }
-$("attachBtn").onclick = e => { e.stopPropagation(); const w = $("attachMenu").classList.contains("hidden"); closePopups(); if (w) $("attachMenu").classList.remove("hidden"); };
+$("attachBtn").onclick = e => { e.stopPropagation(); togglePopup("attachMenu"); };
 $("pickPhoto").onclick = () => { closePopups(); $("photoInput").click(); };
 $("pickVideo").onclick = () => { closePopups(); $("videoInput").click(); };
 $("pickFile").onclick = () => { closePopups(); $("anyFileInput").click(); };
 ["photoInput", "videoInput", "anyFileInput"].forEach(id => {
-  $(id).onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (f) await sendFile(f); };
+  $(id).onchange = async e => { const fs = Array.from(e.target.files); e.target.value = ""; await sendFiles(fs); };
 });
 $("msgInput").addEventListener("paste", async e => {
   const files = e.clipboardData && e.clipboardData.files;
-  if (files && files.length) { e.preventDefault(); await sendFile(files[0]); }
+  if (files && files.length) { e.preventDefault(); await sendFiles(files); }
 });
+
+let albumQueue = [], albumUploading = false, albumPreviewUrls = [];
+function openAlbumUpload(files) {
+  let list = files;
+  let note = "";
+  if (list.length > MAX_ALBUM) { list = list.slice(0, MAX_ALBUM); note = "一本相簿最多 " + MAX_ALBUM + " 張，已取前 " + MAX_ALBUM + " 張。"; }
+  albumQueue = list;
+  albumPreviewUrls.forEach(u => URL.revokeObjectURL(u));
+  albumPreviewUrls = [];
+  const grid = $("albumUpGrid");
+  grid.innerHTML = "";
+  list.slice(0, 12).forEach(f => {
+    const u = URL.createObjectURL(f);
+    albumPreviewUrls.push(u);
+    const t = document.createElement("div");
+    t.className = "t";
+    const img = document.createElement("img");
+    img.src = u; img.alt = "";
+    t.appendChild(img);
+    grid.appendChild(t);
+  });
+  $("albumUpTitle").textContent = "上傳相簿（" + list.length + " 張）";
+  $("albumName").value = "";
+  $("albumUpInfo").textContent = (note ? note + " " : "") + (list.length > 12 ? "僅預覽前 12 張。" : "") + " 單張上限 10MB，大於 1.5MB 的照片會自動縮小。";
+  $("albumUpStart").disabled = false;
+  openModal("albumUpModal");
+}
+$("albumUpStart").onclick = async () => {
+  if (albumUploading) return;
+  albumUploading = true;
+  $("albumUpStart").disabled = true;
+  const files = albumQueue, n = files.length;
+  const results = new Array(n).fill(null);
+  const failed = [];
+  let next = 0, done = 0;
+  const worker = async () => {
+    while (true) {
+      const i = next++;
+      if (i >= n) return;
+      try {
+        const p = await prepareImage(files[i]);
+        if (p.blob.size > MAX_MB * 1024 * 1024) throw new Error("超過 " + MAX_MB + "MB");
+        const base = roomId + "/" + uniq();
+        const url = await uploadTo(base + "." + extOf(p.name, p.type), p.blob, p.type);
+        let thumb = url;
+        try {
+          const tb = await scaleToBlob(p.blob, THUMB_PX, 0.78);
+          if (tb) thumb = await uploadTo(base + "-t.jpg", tb, "image/jpeg");
+        } catch (e) { /* 縮圖失敗就用原圖當縮圖 */ }
+        results[i] = { url, thumb, name: p.name, type: p.type };
+      } catch (e) { failed.push((files[i].name || "第 " + (i + 1) + " 張") + "（" + (e.message || e) + "）"); }
+      done++;
+      $("albumUpInfo").textContent = "上傳中… " + done + " / " + n;
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+  const ok = results.filter(Boolean);
+  albumUploading = false;
+  if (!ok.length) { $("albumUpInfo").textContent = "全部上傳失敗：" + failed.join("、"); $("albumUpStart").disabled = false; return; }
+  const title = $("albumName").value.trim();
+  if (ok.length === 1) await insertMsg({ content: title || null, file_url: ok[0].url, file_name: ok[0].name, file_type: ok[0].type });
+  else await insertMsg({ content: title || null, files: ok });
+  closeModals();
+  if (failed.length) alert("有 " + failed.length + " 張沒有上傳成功：\n" + failed.join("\n"));
+};
+
+/* ---------- 相簿瀏覽 / 下載 ---------- */
+let curAlbum = null;
+function openAlbum(m, files) {
+  curAlbum = { m, files };
+  $("albumTitle").textContent = "📷 " + (m.content || "相簿") + "（" + files.length + " 張）";
+  $("albumInfo").textContent = m.name + " 上傳於 " + fmtTime(m.created_at) + "。點縮圖可放大、瀏覽與單張下載。";
+  const grid = $("albumGrid");
+  grid.innerHTML = "";
+  files.forEach((f, i) => {
+    const t = document.createElement("div");
+    t.className = "t";
+    const img = document.createElement("img");
+    img.src = safeFileUrl(f.thumb) ? f.thumb : f.url; img.loading = "lazy"; img.alt = f.name || "";
+    t.appendChild(img);
+    t.onclick = () => openLightbox(files, i);
+    grid.appendChild(t);
+  });
+  openModal("albumModal");
+}
+async function fetchBlob(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.blob();
+}
+async function downloadOne(f, idx) {
+  try { saveBlob(await fetchBlob(f.url), f.name || ("photo-" + (idx + 1) + ".jpg")); }
+  catch (e) { window.open(f.url, "_blank"); }
+}
+$("albumDlAll").onclick = async () => {
+  if (!curAlbum) return;
+  const files = curAlbum.files;
+  $("albumDlAll").disabled = true;
+  for (let i = 0; i < files.length; i++) {
+    $("albumInfo").textContent = "下載中… " + (i + 1) + " / " + files.length + "（若瀏覽器詢問是否允許下載多個檔案，請選「允許」）";
+    await downloadOne(files[i], i);
+    await sleep(450);
+  }
+  $("albumInfo").textContent = "已送出 " + files.length + " 張的下載。";
+  $("albumDlAll").disabled = false;
+};
+function loadJSZip() {
+  return new Promise((res, rej) => {
+    if (window.JSZip) return res(window.JSZip);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js";
+    s.onload = () => res(window.JSZip);
+    s.onerror = () => rej(new Error("載入 ZIP 工具失敗，請改用「全部下載」"));
+    document.head.appendChild(s);
+  });
+}
+$("albumDlZip").onclick = async () => {
+  if (!curAlbum) return;
+  const files = curAlbum.files;
+  $("albumDlZip").disabled = true;
+  try {
+    const JSZip = await loadJSZip();
+    const zip = new JSZip();
+    for (let i = 0; i < files.length; i++) {
+      $("albumInfo").textContent = "打包中… " + (i + 1) + " / " + files.length;
+      zip.file(String(i + 1).padStart(3, "0") + "_" + (files[i].name || "photo.jpg"), await fetchBlob(files[i].url));
+    }
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveBlob(blob, ((curAlbum.m.content || "相簿") + ".zip").replace(/[\\/:*?"<>|]/g, "_"));
+    $("albumInfo").textContent = "ZIP 已下載。";
+  } catch (e) { $("albumInfo").textContent = "打包失敗：" + (e.message || e); }
+  $("albumDlZip").disabled = false;
+};
+
+/* ---------- 圖片放大檢視 ---------- */
+let lbFiles = [], lbIdx = 0, swipeX = null;
+function renderLb() {
+  const f = lbFiles[lbIdx];
+  $("lbImg").src = f.url;
+  $("lbCount").textContent = (lbIdx + 1) + " / " + lbFiles.length;
+  $("lbPrev").classList.toggle("hidden", lbFiles.length < 2);
+  $("lbNext").classList.toggle("hidden", lbFiles.length < 2);
+}
+function openLightbox(files, i) { lbFiles = files; lbIdx = i; renderLb(); $("lightbox").classList.remove("hidden"); }
+function closeLightbox() { $("lightbox").classList.add("hidden"); $("lbImg").src = ""; }
+function lbStep(d) { if (lbFiles.length < 2) return; lbIdx = (lbIdx + d + lbFiles.length) % lbFiles.length; renderLb(); }
+$("lbClose").onclick = closeLightbox;
+$("lbPrev").onclick = () => lbStep(-1);
+$("lbNext").onclick = () => lbStep(1);
+$("lbDl").onclick = () => downloadOne(lbFiles[lbIdx], lbIdx);
+$("lightbox").addEventListener("click", e => { if (e.target === $("lightbox")) closeLightbox(); });
+$("lightbox").addEventListener("touchstart", e => { swipeX = e.touches[0].clientX; }, { passive: true });
+$("lightbox").addEventListener("touchend", e => {
+  if (swipeX == null) return;
+  const dx = e.changedTouches[0].clientX - swipeX;
+  swipeX = null;
+  if (Math.abs(dx) > 50) lbStep(dx < 0 ? 1 : -1);
+}, { passive: true });
 
 /* ---------- 表情符號 ---------- */
 const EMOJIS = "😀 😃 😄 😁 😆 😂 🤣 😊 🙂 😉 😍 🥰 😘 😎 🤔 😅 😭 😢 😡 😴 🥳 🤗 🙄 😱 👍 👎 👏 🙏 💪 🙌 👌 ✌️ 🤝 ❤️ 💔 🔥 ✨ 🎉 🎂 🍻 🍜 🍔 ☕ 🌧️ ☀️ 🌙 💯 ✅ ❌ ❓ ❗".split(" ");
@@ -947,14 +1583,14 @@ EMOJIS.forEach(em => {
   b.onclick = () => insertAtCursor(em);
   $("emojiBox").appendChild(b);
 });
-$("emojiBtn").onclick = e => { e.stopPropagation(); const w = $("emojiBox").classList.contains("hidden"); closePopups(); if (w) $("emojiBox").classList.remove("hidden"); };
+$("emojiBtn").onclick = e => { e.stopPropagation(); togglePopup("emojiBox"); };
 
 /* ---------- 常用回覆 ---------- */
 const QUICK = [
   ["🙏", "謝謝"], ["👍", "+1"], ["😋", "吃很飽"], ["👌", "沒問題"], ["✅", "收到"], ["🙋", "我可以"],
   ["🙅", "我不行"], ["🚗", "在路上了"], ["📍", "我到了"], ["⏰", "晚點到"], ["🍜", "吃什麼？"], ["🎉", "約嗎？"],
   ["📅", "改天吧"], ["🤔", "再看看"], ["💪", "辛苦了"], ["😂", "哈哈哈"], ["🙇", "不好意思"], ["👏", "太讚了"],
-  ["🏃", "等我一下"], ["🏠", "先回家了"], ["🕖", "幾點開始？"], ["💰", "多少錢？"]
+  ["🏃", "等我一下"], ["🏠", "先回家了"], ["🕖", "幾點開始？"], ["💰", "多少錢?"]
 ];
 QUICK.forEach(([em, t]) => {
   const b = document.createElement("button");
@@ -962,9 +1598,9 @@ QUICK.forEach(([em, t]) => {
   b.onclick = async () => { closePopups(); await insertMsg({ content: t + " " + em }); };
   $("quickBox").appendChild(b);
 });
-$("quickBtn").onclick = e => { e.stopPropagation(); const w = $("quickBox").classList.contains("hidden"); closePopups(); if (w) $("quickBox").classList.remove("hidden"); };
+$("quickBtn").onclick = e => { e.stopPropagation(); togglePopup("quickBox"); };
 
-/* ---------- @ 標註 ---------- */
+/* ---------- @ 標註（在訊息框輸入 @ 即跳出清單） ---------- */
 function openAt(query) {
   const q = (query || "").toLowerCase();
   const items = [{ id: "all", name: "全部人" }];
@@ -980,7 +1616,7 @@ function openAt(query) {
     b.onclick = () => pickAt(it.name);
     box.appendChild(b);
   });
-  ["emojiBox", "quickBox", "attachMenu"].forEach(id => $(id).classList.add("hidden"));
+  ["emojiBox", "quickBox", "attachMenu", "moreMenu"].forEach(id => $(id).classList.add("hidden"));
   box.classList.remove("hidden");
 }
 function pickAt(name) {
@@ -993,11 +1629,6 @@ function pickAt(name) {
   el.setSelectionRange(nb.length, nb.length);
   $("atBox").classList.add("hidden");
 }
-$("atBtn").onclick = e => {
-  e.stopPropagation();
-  if (!$("atBox").classList.contains("hidden")) { closePopups(); return; }
-  openAt("");
-};
 $("msgInput").addEventListener("input", () => {
   const now = Date.now();
   if (channel && now - lastTypingSent > 2000) {
@@ -1009,6 +1640,68 @@ $("msgInput").addEventListener("input", () => {
   const m = /(^|\s)@([^\s@]*)$/.exec(el.value.slice(0, pos));
   if (m) openAt(m[2]); else $("atBox").classList.add("hidden");
 });
+
+/* ---------- 搜尋 ---------- */
+function fillSearchWho() {
+  const sel = $("searchWho");
+  sel.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = ""; all.textContent = "全部成員";
+  sel.appendChild(all);
+  members.forEach((m, id) => {
+    const o = document.createElement("option");
+    o.value = id; o.textContent = m.name + (id === uid ? "（我）" : "");
+    sel.appendChild(o);
+  });
+}
+function highlightInto(el, text, q) {
+  if (!q) { el.textContent = text; return; }
+  const low = text.toLowerCase(), ql = q.toLowerCase();
+  let i = 0, at;
+  while ((at = low.indexOf(ql, i)) >= 0) {
+    if (at > i) el.appendChild(document.createTextNode(text.slice(i, at)));
+    const mk = document.createElement("mark");
+    mk.textContent = text.slice(at, at + q.length);
+    el.appendChild(mk);
+    i = at + q.length;
+  }
+  if (i < text.length) el.appendChild(document.createTextNode(text.slice(i)));
+}
+let searchTimer = null;
+async function runSearch() {
+  const q = $("searchQ").value.trim();
+  const who = $("searchWho").value;
+  const res = $("searchRes");
+  res.innerHTML = "";
+  if (!q && !who) { $("searchInfo").textContent = "請輸入要找的文字，或選擇一位成員。"; return; }
+  $("searchInfo").textContent = "搜尋中…";
+  let query = db.from("messages").select("*").eq("room", roomId).neq("kind", "system");
+  if (q) query = query.ilike("content", "%" + q.replace(/[\\%_]/g, "\\$&") + "%");
+  if (who) query = query.eq("user_id", who);
+  const { data, error } = await query.order("id", { ascending: false }).limit(100);
+  if (error) { $("searchInfo").textContent = "搜尋失敗：" + error.message; return; }
+  $("searchInfo").textContent = data.length ? "找到 " + data.length + " 則（最新的在最上面，最多顯示 100 則）。點一下可跳到該則訊息。" : "沒有找到符合的訊息。";
+  data.forEach(m => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "item";
+    const w = document.createElement("div");
+    w.className = "who"; w.textContent = m.name + "　" + fmtTime(m.created_at);
+    const t = document.createElement("div");
+    highlightInto(t, m.content || snippet(m), q);
+    b.append(w, t);
+    b.onclick = () => { closeModals(); setTimeout(() => jumpToMessage(m.id), 80); };
+    res.appendChild(b);
+  });
+}
+$("searchBtn").onclick = () => {
+  closePopups();
+  fillSearchWho();
+  $("searchQ").value = ""; $("searchRes").innerHTML = ""; $("searchInfo").textContent = "可輸入文字搜尋，或只選成員看他說過的話。";
+  openModal("searchModal");
+  $("searchQ").focus();
+};
+$("searchQ").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 350); });
+$("searchWho").addEventListener("change", runSearch);
 
 /* ---------- 注意事項／公告 ---------- */
 function annSig() { return (roomInfo.announcement || "") + "|" + (roomInfo.notice || ""); }
@@ -1025,6 +1718,7 @@ function switchTab(which) {
 $("tabNotice").onclick = () => switchTab("notice");
 $("tabAnn").onclick = () => switchTab("ann");
 $("noticeBtn").onclick = async () => {
+  closePopups();
   await refreshRoom();
   $("noticeMsg").textContent = "";
   $("noticeView").textContent = roomInfo.notice || "（房主尚未填寫）";
@@ -1048,49 +1742,52 @@ async function saveRoomPatch(patch, msgEl) {
   return true;
 }
 $("noticeSave").onclick = async () => {
-  if (await saveRoomPatch({ notice: $("noticeEdit").value }, $("noticeMsg"))) { alert("注意事項已更新"); lsSet("chat_ann_" + roomId, annSig()); }
+  if (await saveRoomPatch({ notice: $("noticeEdit").value }, $("noticeMsg"))) { toast("注意事項已更新"); lsSet("chat_ann_" + roomId, annSig()); }
 };
 $("annSave").onclick = async () => {
-  if (await saveRoomPatch({ announcement: $("annEdit").value }, $("noticeMsg"))) { alert("公告已更新，朋友約 1 分鐘內會看到紅點提示"); lsSet("chat_ann_" + roomId, annSig()); }
+  if (await saveRoomPatch({ announcement: $("annEdit").value }, $("noticeMsg"))) { toast("公告已更新，朋友約 1 分鐘內會看到紅點提示"); lsSet("chat_ann_" + roomId, annSig()); }
 };
 
-/* ---------- 我的名稱與頭像 ---------- */
-$("profileBtn").onclick = () => {
+/* ---------- 我的名稱・頭像・副標 ---------- */
+function openProfile() {
   $("profileMsg").textContent = "";
   $("profileName").value = me.name;
+  $("profileSub").value = me.subtitle || "";
   profileAvatarPicker = makeAvatarPicker($("profileAvatar"), me.avatar);
   openModal("profileModal");
-};
+}
 $("profileSave").onclick = async () => {
   const msg = $("profileMsg");
   const nn = $("profileName").value.trim().slice(0, 20);
+  const sub = $("profileSub").value.trim().slice(0, 20);
   if (!nn) { msg.textContent = "名稱不能空白"; return; }
   $("profileSave").disabled = true;
   try {
     const avatar = await profileAvatarPicker.resolve();
-    const old = me.name;
-    const { error } = await db.from("room_members").update({ name: nn, avatar }).eq("room", roomId).eq("user_id", uid);
+    const oldName = me.name, oldSub = me.subtitle || "";
+    const { error } = await db.from("room_members").update({ name: nn, avatar, subtitle: sub || null }).eq("room", roomId).eq("user_id", uid);
     if (error) throw error;
-    me.name = nn; me.avatar = avatar;
+    me.name = nn; me.avatar = avatar; me.subtitle = sub;
     lsSet("chat_name", nn);
-    members.set(uid, { user_id: uid, name: nn, avatar });
-    repaintAvatars(uid);
+    members.set(uid, { user_id: uid, name: nn, avatar, subtitle: sub });
+    repaintMember(uid);
     if (channel) channel.track({ name: nn });
     closeModals();
-    if (nn !== old) await insertMsg({ kind: "system", content: old + " 改名為 " + nn });
+    if (nn !== oldName) await insertMsg({ kind: "system", content: oldName + " 改名為 " + nn });
+    if (sub !== oldSub) await insertMsg({ kind: "system", content: nn + (sub ? " 的狀態：" + sub : " 清除了狀態") });
   } catch (e) { msg.textContent = "儲存失敗：" + (e.message || e); }
   $("profileSave").disabled = false;
 };
 
 /* ---------- 房主設定 ---------- */
-$("adminBtn").onclick = () => {
+function openAdmin() {
   $("adminMsg").textContent = "";
   $("adminTitle").value = roomInfo.title;
   $("adminD").value = ""; $("adminH").value = "";
   $("adminUnlimited").checked = false;
   adminPin = makePin($("adminPin"));
   openModal("adminModal");
-};
+}
 $("adminSave").onclick = async () => {
   const msg = $("adminMsg");
   const patch = { title: $("adminTitle").value };
@@ -1107,12 +1804,11 @@ $("adminSave").onclick = async () => {
     if (pin.length !== 4) { msg.textContent = "通關密碼要填滿 4 碼（不改請全部留空）"; return; }
     patch.pin = pin;
   }
-  if (await saveRoomPatch(patch, msg)) { closeModals(); alert("設定已儲存"); }
+  if (await saveRoomPatch(patch, msg)) { closeModals(); toast("設定已儲存"); }
 };
 $("adminCopyKey").onclick = () => {
   if (!adminKey) { alert("這台裝置沒有保存房主專用網址（可能是用不同裝置取得房主權限）。請使用建立聊天室時保存的那組網址。"); return; }
-  const base = (SHARE_BASE || (location.origin + location.pathname)).split("#")[0];
-  copyText(base + "#" + roomId + "." + adminKey);
+  copyText(baseUrl() + "#" + roomId + "." + adminKey, "已複製房主專用網址，請自己保存，不要外傳");
 };
 $("adminClear").onclick = async () => {
   if (!confirm("確定要清空這個聊天室的所有訊息與上傳的檔案嗎？\n這個動作無法復原。")) return;
@@ -1134,46 +1830,190 @@ $("adminClear").onclick = async () => {
     for (let i = 0; i < paths.length; i += 100) await db.storage.from(BUCKET).remove(paths.slice(i, i + 100));
   } catch (e) { /* 檔案可到 Supabase 後台 Storage 手動刪除 */ }
   if (channel) channel.send({ type: "broadcast", event: "cleared", payload: {} });
+  lsSet(readKey(), ""); lsSet(markKey(), "");
   resetList();
   await loadHistory();
+  placeInitialPosition();
   msg.textContent = "";
   closeModals();
-  alert("已清空。");
+  toast("已清空");
 };
 
-/* ---------- 複製邀請網址 / 匯出 ---------- */
-$("copyBtn").onclick = () => {
-  const base = (SHARE_BASE || (location.origin + location.pathname)).split("#")[0];
-  copyText(base + "#" + roomId);
-};
-$("exportBtn").onclick = async () => {
-  setStatus("整理中…");
+/* ---------- 我是房主（在其他裝置貼上房主專用網址） ---------- */
+async function getAdminByKey() {
+  const t = prompt("請貼上「房主專用網址」（建立聊天室時保存的那組）：");
+  if (!t) return;
+  let key = t.trim();
+  const hashPart = key.includes("#") ? key.slice(key.indexOf("#") + 1) : key;
+  const i = hashPart.indexOf(".");
+  key = i >= 0 ? hashPart.slice(i + 1) : hashPart;
+  if (!key) return;
+  const { data, error } = await db.rpc("join_room", { p_room: roomId, p_pin: null, p_name: null, p_admin_key: key });
+  if (error || !data || !data.ok || !data.is_admin) { alert("房主專用網址不正確，或這不是這個聊天室的房主網址。"); return; }
+  adminKey = key;
+  lsSet("chat_ak_" + roomId, key);
+  await refreshRoom();
+  toast("已取得房主權限，可到「⋯ 更多」→「房主設定」");
+}
+
+/* ---------- 「⋯ 更多」選單 ---------- */
+$("moreBtn").onclick = e => { e.stopPropagation(); updateMenuState(); togglePopup("moreMenu"); };
+$("moreMenu").addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  closePopups();
+  const act = b.dataset.act;
+  if (act === "copy") copyText(baseUrl() + "#" + roomId, "✅ 已複製「邀請連結」！請貼到 LINE 給朋友（通關密碼請另外私訊告訴他們）");
+  else if (act === "export") { $("expMsg").textContent = ""; $("expStart").disabled = false; openModal("exportModal"); }
+  else if (act === "profile") openProfile();
+  else if (act === "bell") askNotify();
+  else if (act === "theme") {
+    theme = theme === "dark" ? "light" : "dark";
+    applyTheme(theme); lsSet("chat_theme", theme);
+  }
+  else if (act === "mark") jumpToMark();
+  else if (act === "admin") openAdmin();
+  else if (act === "getadmin") getAdminByKey();
+});
+
+/* ---------- 匯出 ---------- */
+async function fetchAllMessages() {
   let all = [], from = 0;
   while (true) {
     const { data, error } = await db.from("messages").select("*").eq("room", roomId).order("id", { ascending: true }).range(from, from + 999);
-    if (error) { setStatus("匯出失敗：" + error.message); return; }
+    if (error) throw error;
     all = all.concat(data);
     if (data.length < 1000) break;
     from += 1000;
   }
+  return all;
+}
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function richHtml(text) {
+  const re = mentionRegex();
+  let out = "", last = 0, mm;
+  while ((mm = re.exec(text))) {
+    out += esc(text.slice(last, mm.index)) + '<span class="at">' + esc(mm[0]) + "</span>";
+    last = mm.index + mm[0].length;
+  }
+  return out + esc(text.slice(last));
+}
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+}
+function filesOf(m) {
+  const fs = Array.isArray(m.files) ? m.files.filter(f => f && safeFileUrl(f.url)) : [];
+  if (fs.length) return fs.map(f => ({ url: f.url, name: f.name, type: f.type || "image/jpeg" }));
+  if (m.file_url && safeFileUrl(m.file_url)) return [{ url: m.file_url, name: m.file_name, type: m.file_type || "" }];
+  return [];
+}
+async function exportTxt() {
+  const all = await fetchAllMessages();
   const byId = new Map(all.map(m => [m.id, m]));
   const lines = all.map(m => {
-    const t = new Date(m.created_at).toLocaleString("zh-TW", { hour12: false });
+    const t = fmtFull(m.created_at);
     if (m.kind === "system") return "[" + t + "] ※ " + m.content;
     let s = "[" + t + "] " + m.name + "：";
     const o = m.reply_to && byId.get(m.reply_to);
     if (o) s += "(回覆 " + o.name + "：" + snippet(o) + ") ";
     s += (m.content || "");
-    if (m.file_url) s += " (檔案：" + (m.file_name || "") + " " + m.file_url + ")";
+    const fs = filesOf(m);
+    if (fs.length) s += " (" + (fs.length > 1 ? "相簿 " + fs.length + " 張：" : "檔案：") + fs.map(f => (f.name || "") + " " + f.url).join("　") + ")";
     return s;
   });
-  const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/plain;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = (roomInfo.title || "聊天室") + "-" + new Date().toISOString().slice(0, 10) + ".txt";
-  a.click();
-  URL.revokeObjectURL(a.href);
-  setStatus("");
+  saveBlob(new Blob(["﻿" + lines.join("\n")], { type: "text/plain;charset=utf-8" }), safeName((roomInfo.title || "聊天室") + "-" + localDate()) + ".txt");
+}
+function safeName(s) { return String(s).replace(/[\\/:*?"<>|]/g, "_"); }
+async function exportHtml(embedFiles) {
+  const all = await fetchAllMessages();
+  const byId = new Map(all.map(m => [m.id, m]));
+  const jobs = [];
+  const seenUrl = new Set();
+  all.forEach(m => filesOf(m).forEach(f => {
+    const isImg = (f.type || "").startsWith("image/");
+    if (!isImg && !embedFiles) return;
+    if (!seenUrl.has(f.url)) { seenUrl.add(f.url); jobs.push({ url: f.url, img: isImg, type: f.type }); }
+  }));
+  members.forEach(mem => { if (safeAvatarUrl(mem.avatar) && !seenUrl.has(mem.avatar)) { seenUrl.add(mem.avatar); jobs.push({ url: mem.avatar, img: false, type: "image/jpeg" }); } });
+  const dataMap = new Map();
+  let done = 0, next = 0;
+  const worker = async () => {
+    while (true) {
+      const i = next++;
+      if (i >= jobs.length) return;
+      const j = jobs[i];
+      try {
+        const blob = await fetchBlob(j.url);
+        if (j.img && /^image\/(jpeg|png|webp)$/.test(blob.type)) {
+          try { dataMap.set(j.url, await blobToDataUrl(await scaleToBlob(blob, EXPORT_IMG_PX, 0.8))); }
+          catch (e) { dataMap.set(j.url, await blobToDataUrl(blob)); }
+        } else dataMap.set(j.url, await blobToDataUrl(blob));
+      } catch (e) { /* 取不到就保留連結 */ }
+      done++;
+      $("expMsg").textContent = "處理圖片與檔案… " + done + " / " + jobs.length;
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+  $("expMsg").textContent = "組合網頁檔…";
+
+  const avatarHtml = userId => {
+    const mem = members.get(userId);
+    const av = mem && mem.avatar;
+    if (safeAvatarUrl(av) && dataMap.has(av)) return '<img src="' + dataMap.get(av) + '" alt="">';
+    if (typeof av === "string" && av.startsWith("svg:") && AV[av.slice(4)]) return svgOf(av.slice(4));
+    if (typeof av === "string" && av.startsWith("emoji:")) return esc(av.slice(6));
+    return "🙂";
+  };
+  const mediaHtml = f => {
+    const type = f.type || "";
+    const data = dataMap.get(f.url);
+    const src = data || f.url;
+    if (type.startsWith("image/")) return '<img class="p" src="' + src + '" alt="' + esc(f.name || "") + '">';
+    if (type.startsWith("video/")) return data ? '<video class="p" controls src="' + data + '"></video>' : '<a href="' + f.url + '">🎬 ' + esc(f.name || "影片") + "（連結）</a>";
+    if (type.startsWith("audio/")) return data ? '<audio controls src="' + data + '"></audio>' : '<a href="' + f.url + '">🎵 ' + esc(f.name || "音訊") + "（連結）</a>";
+    return data ? '<a download="' + esc(f.name || "file") + '" href="' + data + '">📎 ' + esc(f.name || "檔案") + "（內嵌，點擊儲存）</a>" : '<a href="' + f.url + '">📎 ' + esc(f.name || "檔案") + "（連結）</a>";
+  };
+  const parts = [];
+  parts.push('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(roomInfo.title) + ' 聊天紀錄</title><style>' +
+    'body{margin:0;background:#f2f4f7;font-family:-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#222}' +
+    '.wrap{max-width:760px;margin:0 auto;padding:16px}h1{font-size:20px;margin:0 0 4px}.info{font-size:12px;color:#7a8394;margin-bottom:16px;line-height:1.6}' +
+    '.m{display:flex;gap:8px;margin:12px 0;max-width:90%}.m.me{flex-direction:row-reverse;margin-left:auto}' +
+    '.av{width:36px;height:36px;border-radius:50%;background:#e4e8ef;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center;font-size:20px}.av img,.av svg{width:100%;height:100%;object-fit:cover}' +
+    '.c{display:flex;flex-direction:column;align-items:flex-start;min-width:0}.me .c{align-items:flex-end}' +
+    '.meta{font-size:12px;color:#7a8394;margin:0 4px 2px}.b{background:#fff;border:1px solid #e2e6ed;border-radius:12px;padding:8px 12px;white-space:pre-wrap;word-break:break-word}' +
+    '.me .b{background:#dce8ff;border-color:#c4d7fb}.q{font-size:12px;color:#7a8394;background:#eef1f6;border-left:3px solid #2f6fed;border-radius:6px;padding:4px 8px;margin-bottom:6px;white-space:normal}' +
+    '.at{color:#2f6fed;font-weight:600}.sys{text-align:center;font-size:12px;color:#7a8394;margin:10px 0}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px;margin-top:6px;max-width:420px}' +
+    '.g img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px}img.p,video.p{max-width:100%;max-height:420px;border-radius:8px;display:block;margin-top:6px}</style></head><body><div class="wrap">');
+  parts.push("<h1>" + esc(roomInfo.title) + "</h1><div class='info'>匯出時間：" + esc(fmtFull(Date.now())) + "　共 " + all.length + " 則訊息<br>照片已縮小內嵌（最長邊 " + EXPORT_IMG_PX + "px）；" + (embedFiles ? "影片與檔案已內嵌。" : "影片與其他檔案保留為連結（聊天室清空或到期後可能失效）。") + "</div>");
+  all.forEach(m => {
+    if (m.kind === "system") { parts.push('<div class="sys">' + esc(fmtFull(m.created_at)) + "　" + esc(m.content) + "</div>"); return; }
+    const mine = isMine(m);
+    const sub = subtitleText(m.user_id);
+    let h = '<div class="m' + (mine ? " me" : "") + '"><div class="av">' + avatarHtml(m.user_id) + '</div><div class="c"><div class="meta">' + esc(m.name + sub) + "　" + esc(fmtFull(m.created_at)) + '</div><div class="b">';
+    const o = m.reply_to && byId.get(m.reply_to);
+    if (o) h += '<div class="q">↩ 回覆 ' + esc(o.name) + "：" + esc(snippet(o)) + "</div>";
+    if (m.content) h += richHtml(m.content);
+    const fs = filesOf(m);
+    if (fs.length >= 2) h += '<div class="g">' + fs.map(f => '<img src="' + (dataMap.get(f.url) || f.url) + '" alt="' + esc(f.name || "") + '">').join("") + "</div>";
+    else if (fs.length === 1) h += mediaHtml(fs[0]);
+    h += "</div></div></div>";
+    parts.push(h);
+  });
+  parts.push("</div></body></html>");
+  saveBlob(new Blob(parts, { type: "text/html;charset=utf-8" }), safeName((roomInfo.title || "聊天室") + "-" + localDate()) + ".html");
+}
+document.querySelectorAll('input[name="exp"]').forEach(r => r.addEventListener("change", () => {
+  $("expFilesWrap").classList.toggle("hidden", document.querySelector('input[name="exp"]:checked').value !== "html");
+}));
+$("expStart").onclick = async () => {
+  const kind = document.querySelector('input[name="exp"]:checked').value;
+  $("expStart").disabled = true;
+  $("expMsg").textContent = "讀取訊息中…";
+  try {
+    if (kind === "txt") await exportTxt(); else await exportHtml($("expFiles").checked);
+    $("expMsg").textContent = "✅ 匯出完成，請查看瀏覽器的下載項目。";
+  } catch (e) { $("expMsg").textContent = "匯出失敗：" + (e.message || e); }
+  $("expStart").disabled = false;
 };
 
 init();
